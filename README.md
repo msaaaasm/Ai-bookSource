@@ -1,6 +1,7 @@
 # AiWritingLegado — Legado书源开发AI技能包
 
-> 一个为AI智能体量身定制的Legado阅读APP书源开发技能包，内含知识库、调试引擎和全套规范。
+> 一个为AI智能体量身定制的Legado阅读APP书源开发技能包，内含知识库、调试引擎和全套规范。   
+> 在此 https://github.com/DandanLLab/legadoSkill 仓库的基础上修改。
 
 ---
 
