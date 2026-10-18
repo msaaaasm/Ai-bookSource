@@ -1,0 +1,58 @@
+[
+  {
+    "bookSourceComment": "起点中文网 (qidian.com) 官方书源\n1. 支持全站书名/作者搜索及多页翻页\n2. 内置腾讯WAF与验证码安全拦截自动绕过（WebView静默环境执行 + 手动滑动验证降级）\n3. 完整支持月票榜/畅销榜/阅读榜/新书榜/推荐榜等丰富排行发现\n4. 支持全本/连载免费正版章节在线阅读",
+    "bookSourceGroup": "正版,起点",
+    "bookSourceName": "起点中文网",
+    "bookSourceType": 0,
+    "bookSourceUrl": "https://m.qidian.com",
+    "customOrder": 0,
+    "enabled": true,
+    "enabledCookieJar": true,
+    "enabledExplore": true,
+    "exploreUrl": "[\n  {\"title\": \"🏆 男生月票榜\", \"url\": \"https://m.qidian.com/rank/yuepiao/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"💰 男生畅销榜\", \"url\": \"https://m.qidian.com/rank/hotsales/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"📖 男生阅读榜\", \"url\": \"https://m.qidian.com/rank/readindex/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"🌱 男生新书榜\", \"url\": \"https://m.qidian.com/rank/newbook/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"👍 男生推荐榜\", \"url\": \"https://m.qidian.com/rank/rec/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"⚡ 男生更新榜\", \"url\": \"https://m.qidian.com/rank/update/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"✍️ 男生签约榜\", \"url\": \"https://m.qidian.com/rank/sign/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"🎖️ 男生新人榜\", \"url\": \"https://m.qidian.com/rank/newauthor/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"❤️ 男生粉丝榜\", \"url\": \"https://m.qidian.com/rank/newfans/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"🎀 女生月票榜\", \"url\": \"https://m.qdmm.com/rank/yuepiao/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"💎 女生畅销榜\", \"url\": \"https://m.qdmm.com/rank/hotsales/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}},\n  {\"title\": \"🌸 女生新书榜\", \"url\": \"https://m.qdmm.com/rank/newbook/\", \"style\": {\"layout_flexGrow\": 1, \"layout_flexBasisPercent\": 0.25}}\n]",
+    "header": "{\n  \"User-Agent\": \"Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36\",\n  \"Accept-Language\": \"zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7\",\n  \"Referer\": \"https://m.qidian.com/\"\n}",
+    "lastUpdateTime": 1792134351138,
+    "loginCheckJs": "function checkSecurity(result) {\n    try {\n        var url = result.url();\n        var src = result.body();\n        var code = result.code();\n        \n        var isBlocked = false;\n        if (code === 202 || code === 403 || code === 503 || code === 429) {\n            isBlocked = true;\n        } else if (src && (\n            src.indexOf(\"probe.js\") !== -1 ||\n            src.indexOf(\"x-waf-captcha\") !== -1 ||\n            src.indexOf(\"TCaptcha\") !== -1 ||\n            src.indexOf(\"turing.captcha\") !== -1 ||\n            src.indexOf(\"安全验证\") !== -1 ||\n            src.indexOf(\"请完成安全验证\") !== -1 ||\n            src.indexOf(\"Just a moment\") !== -1\n        )) {\n            isBlocked = true;\n        }\n        \n        if (!isBlocked) {\n            source.put(\"waf_block_count\", \"0\");\n            return result;\n        }\n        \n        java.log(\"检测到起点安全验证或WAF拦截: \" + url);\n        var count = parseInt(source.get(\"waf_block_count\") || \"0\");\n        count++;\n        source.put(\"waf_block_count\", count.toString());\n        \n        if (count <= 2) {\n            java.log(\"尝试使用系统WebView自动执行环境验证...\");\n            try {\n                var webResult = java.webView(url, url, \n                    \"setTimeout(function() { window.legado.getHTML(document.documentElement.outerHTML); }, 4000);\"\n                );\n                if (webResult && webResult.indexOf(\"probe.js\") === -1 && webResult.indexOf(\"安全验证\") === -1) {\n                    java.log(\"WebView自动验证通过，重新连接\");\n                    source.put(\"waf_block_count\", \"0\");\n                    result = java.connect(url);\n                    return result;\n                }\n            } catch (e) {\n                java.log(\"WebView执行异常: \" + e);\n            }\n        }\n        \n        java.log(\"唤起浏览器进行手动安全验证...\");\n        java.toast(\"检测到起点安全验证，请在弹出窗口中完成滑动验证\");\n        java.startBrowserAwait(url, \"起点安全验证\");\n        source.put(\"waf_block_count\", \"0\");\n        result = java.connect(url);\n        return result;\n    } catch (err) {\n        java.log(\"验证检查异常: \" + err);\n        return result;\n    }\n}\n\nresult = checkSecurity(result);\nresult;",
+    "loginUrl": "https://m.qidian.com",
+    "respondTime": 180000,
+    "ruleBookInfo": {
+      "author": "[property=\"og:novel:author\"]@content",
+      "coverUrl": "[property=\"og:image\"]@content##^//##https://",
+      "intro": "[property=\"og:description\"]@content",
+      "kind": "[property=\"og:novel:category\"]@content, [property=\"og:novel:status\"]@content",
+      "lastChapter": "[property=\"og:novel:latest_chapter_name\"]@content",
+      "name": "[property=\"og:title\"]@content",
+      "tocUrl": "a[href*='catalog']@href"
+    },
+    "ruleContent": {
+      "content": ".content@p@html"
+    },
+    "ruleExplore": {
+      "author": "[class*=\"_subTitle_\"]@text##\\s*·.*##",
+      "bookList": ".y-list__item",
+      "bookUrl": "a@href@js:result.replace('chapter', 'book').replace('/0/', '')",
+      "coverUrl": "img@data-src##^//##https://",
+      "intro": "[class*=\"_bookDesc_\"]@text",
+      "kind": "[class*=\"_subTitle_\"]@text##.*·\\s*([^·]+)\\s*·.*##$1",
+      "name": "h2@text",
+      "wordCount": "[class*=\"_subTitle_\"]@text##.*·\\s*##"
+    },
+    "ruleSearch": {
+      "author": "[class*=\"searchBookAuthor\"]@text",
+      "bookList": ".y-list__item",
+      "bookUrl": "a@href@js:result.replace('chapter', 'book').replace('/0/', '')",
+      "coverUrl": "img@data-src##^//##https://",
+      "intro": "[class*=\"searchBookDesc\"]@text",
+      "kind": "[class*=\"_tags_\"] p@text##\\s+##,",
+      "name": "h2@text",
+      "wordCount": "[class*=\"_tags_\"] p.-1@text"
+    },
+    "ruleToc": {
+      "chapterList": "[class*='_chapterItem_']",
+      "chapterName": "h2@text",
+      "chapterUrl": "href##^//##https://"
+    },
+    "searchUrl": "https://m.qidian.com/so/{{key}}.html?pageNum={{page}}",
+    "weight": 0
+  }
+]
