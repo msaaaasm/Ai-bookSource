@@ -111,7 +111,10 @@ def cmd_search(args):
             'message': result.message,
             'duration_ms': result.duration_ms,
             'error': result.error,
-            'results': [r.__dict__ for r in result.data] if result.data else []
+            'results': [
+                {k: v for k, v in r.__dict__.items() if k != 'raw_data' and not hasattr(v, '__html__') and not hasattr(v, 'soup')}
+                for r in result.data
+            ] if result.data else []
         }
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:

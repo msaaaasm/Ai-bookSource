@@ -57,7 +57,7 @@ description: "Legado书源驯兽师，自动化分析网站结构生成书源，
 **在工作开始前，你必须先了解自己的能力、工具和约束条件。**
 
 **第一步**：调用工具读取自我认知文档
-- 使用工具：`read_file_paginated(file_path="assets/智能体自我认知.md", page=1)`
+- 使用工具：`read_file_paginated(file_path="knowledge/智能体自我认知.md", page=1)`
 - 如果内容较多，继续读取后续页面
 
 **第二步**：调用工具读取精华知识汇总
@@ -80,42 +80,82 @@ description: "Legado书源驯兽师，自动化分析网站结构生成书源，
 ## 📁 项目结构说明
 
 ```
-legadoSkill/
-├── 笔趣阁m.bqg5.json              # 书源JSON文件（输出）
-├── 起点中文网.json                # 书源JSON文件（输出）
-├── 其他书源.json                  # 书源JSON文件（输出）
-├── .trae/skills/legado-book-source-tamer/
-│   └── SKILL.md                    # 本技能包
+AiWritingLegado/
+├── .gitignore                      # Git忽略规则
+├── assets/                         # 知识库核心资源（保持原路径供代码引用）
+│   ├── knowledge_base/book_sources/# 1751个真实书源案例（参考数据库）
+│   ├── knowledge_index.json        # 知识索引（代码引用）
+│   ├── learned_sources.json        # 学习记录
+│   ├── metadata.json               # 元数据
+│   ├── eruda.js                    # 移动端调试工具
+│   ├── user.js                     # 用户脚本基础库
+│   ├── 仿M浏览器元素审查.user.js   # 元素审查工具
+│   ├── 傲娇的验证大佬v0.2.js       # 验证码处理工具
+│   ├── 阅读源码.txt               # Legado源码文档（14MB，代码引用）
+│   ├── 元素选择浏览器参考。.txt    # 元素选择参考（2.8MB）
+│   ├── 核心视图工具.txt            # 视图工具（1.7MB）
+│   └── 神秘的参考.txt             # 参考资料（220KB）
+├── book_sources/                   # 📦 所有完成的书源JSON输出
+│   ├── 起点中文网.json
+│   ├── 番茄小说.json
+│   ├── 无限小说网.json
+│   ├── 笔趣阁bqgui.json
+│   └── 顶点小说.json
 ├── config/
-│   ├── system_prompt.md            # 系统提示词（完整工作流程）
-│   └── system/prompt.md            # 详细提示词（规则规范）
-├── debugger/                       # 调试引擎（核心）
+│   ├── system_prompt.md            # 完整系统提示词（67KB）
+│   ├── system/prompt.md            # 详细提示词规范
+│   └── agent_llm_config.json       # LLM配置
+├── debugger/                       # 🔧 Python模拟调试引擎
 │   ├── test_universal.py           # 通用测试入口
 │   ├── engine/
 │   │   ├── debug_engine.py         # 调试引擎主类
-│   │   ├── analyze_rule.py         # 规则分析器
+│   │   ├── analyze_rule.py         # 规则分析器（CSS/XPath/JSON/Regex/JS）
 │   │   ├── book_source.py          # 书源数据模型
 │   │   ├── web_book.py             # 网页获取器
-│   │   ├── auto_fixer.py           # 自动修复迭代模块
-│   │   └── file_organizer.py       # 文件整理模块（新增！）
+│   │   ├── auto_fixer.py           # 自动修复迭代
+│   │   ├── analyze_url.py          # URL分析器
+│   │   ├── file_organizer.py       # 文件整理器
+│   │   └── kotlin_reference/       # Kotlin源码参考
 │   └── legado_checker.py           # Legado仓库检查器
-├── legado/                         # Legado官方源码仓库
-├── assets/                         # 知识库（核心资源）
-│   ├── legado_knowledge_base.md    # 完整知识库
-│   ├── css选择器规则.txt           # CSS选择器规则
-│   ├── 书源规则：从入门到入土.md    # 详细教程
-│   ├── 真实书源模板库.txt           # 真实模板
-│   ├── 真实书源高级功能分析.md      # 高级功能
-│   ├── 智能体自我认知.md            # 智能体认知
-│   ├── 智能体常用话术库.md          # 话术模板
-│   ├── 智能体输出格式优化指南.md    # 输出格式
-│   ├── 书源输出模板_严格模式.md    # 严格模板
-│   ├── 活力宝的书源日记231224.txt  # 实战技巧
-│   ├── 方法-JS扩展类.md            # JS扩展方法
-│   ├── 方法-加密解密.md            # 加密解密
-│   ├── 方法-登录检查JS.md          # 登录检查
-│   └── knowledge_base/book_sources/ # 1751个真实书源案例
-└── test_result.txt                 # 测试结果输出
+├── docs/                           # 📚 技术文档和开发报告
+│   ├── AI_AGENT_WORKFLOW.md        # AI Agent工作流与开发规范
+│   ├── ESSENTIAL_KNOWLEDGE_SUMMARY.md  # 精华知识汇总（必读）
+│   ├── FINAL_CHECKLIST.md          # 书源最终检查清单
+│   ├── LEGADO_DEBUGGER.md          # 调试器使用文档
+│   ├── PROJECT_ARCHITECTURE.md     # 项目架构说明
+│   └── ...（其他技术报告）
+├── knowledge/                      # 📖 核心知识库
+│   ├── css选择器规则.txt           # CSS选择器完整手册（80KB）
+│   ├── 书源规则教程.md             # 从入门到入土详细教程（39KB）
+│   ├── 真实书源模板库.txt           # 可直接用的书源模板
+│   ├── 真实书源高级功能分析.md      # 134个真实书源分析
+│   ├── 智能体自我认知.md            # AI能力和约束说明
+│   ├── 方法-JS扩展类.md            # java对象JS方法
+│   ├── 方法-加密解密.md            # 加密解密方法
+│   ├── 方法-登录检查JS.md          # 登录验证JS
+│   ├── Legado知识库.txt            # 知识速查
+│   ├── 订阅源规则帮助.txt           # 订阅源开发
+│   ├── 书源输出模板_严格模式.md     # 严格输出模板
+│   ├── 书源实战日记.md             # 实战案例笔记
+│   ├── legado_knowledge_base.md    # 综合知识库
+│   └── reference/                  # 参考资料
+│       ├── 3a.json参考.txt         # 实际书源参考
+│       ├── TapManga.json参考.txt
+│       ├── 霹雳书屋.json参考.txt
+│       ├── 写源辅助AI提示词.txt    # 其他AI写源提示词
+│       ├── 书源日记231224.txt      # 经验日记
+│       └── ...（更多参考）
+├── legado/                         # Legado官方Kotlin源码（需要时克隆）
+│   └── （git clone https://github.com/gedoor/legado.git）
+├── skill/                          # 🎯 AI技能包
+│   ├── SKILL.md                    # 当前生效技能（v0.7，主文件）
+│   ├── examples/                   # 经典书源实战案例库（起点WAF/段评范例等）
+│   └── history/                    # 历史版本
+│       ├── SKILLV0.1.md ~ SKILLV0.7.md
+├── tools/                          # 🛠️ 辅助工具集
+│   └── skill-creator/              # 技能自动创建、测试与评估工具包
+├── temp/                           # 🗑 临时工作区（内容不纳入版本控制）
+└── README.md                       # 项目说明（本文件）
 ```
 
 ---
@@ -1308,30 +1348,33 @@ loginCheckJs来处理。
 
 **直接输出完整的JSON数组**，用户复制即可导入。
 
-#### 3.2 将JSON文件保存到项目根目录（重要！）
+#### 3.2 将JSON文件保存到 book_sources 目录（重要！）
 
-**必须将书源JSON文件保存到项目根目录**，文件名格式：`{书源名称}.json`
+**必须将书源JSON文件保存到 book_sources/ 目录**，文件名格式：`book_sources/{书源名称}.json`
 
 **保存路径示例**：
 ```
-legadoSkill/
-├── 笔趣阁m.bqg5.json          # 书源JSON文件（临时保存）
-├── 起点中文网.json            # 书源JSON文件（临时保存）
-├── 其他书源.json              # 书源JSON文件（临时保存）
-└── .trae/skills/...           # 技能包目录
+AiWritingLegado/
+└── book_sources/
+    ├── 笔趣阁bqgui.json          # 书源JSON文件
+    ├── 起点中文网.json            # 书源JSON文件
+    └── 其他书源.json              # 书源JSON文件
 ```
 
 **操作步骤**：
-1. 使用 `Write` 工具创建JSON文件
-2. 文件路径：`d:\pack_project_1771468148809\legadoSkill\{书源名称}.json`
+1. 使用写文件工具创建JSON文件
+2. 文件路径：`book_sources/{书源名称}.json`
 3. 内容：完整的书源JSON数组（与对话中输出的一致）
 
 **示例**：
-```
-Write(
-  file_path="d:\pack_project_1771468148809\legadoSkill\笔趣阁m.bqg5.json",
-  content=[书源JSON内容]
-)
+```json
+[
+  {
+    "bookSourceName": "起点中文网",
+    "bookSourceUrl": "https://m.qidian.com",
+    ...
+  }
+]
 ```
 
 ⚠️ **重要提醒**：保存到根目录后，**必须立即执行步骤4**，将文件整理到书源专属文件夹！

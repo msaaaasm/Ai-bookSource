@@ -8,7 +8,6 @@
     "exploreUrl": "玄幻::/json?sortid=1&page={{page}}\n武侠::/json?sortid=2&page={{page}}\n都市::/json?sortid=3&page={{page}}\n历史::/json?sortid=4&page={{page}}\n网游::/json?sortid=5&page={{page}}\n科幻::/json?sortid=6&page={{page}}\n女生::/json?sortid=7&page={{page}}\n完本::/json?sortid=8&page={{page}}",
     "ruleSearch": {
       "bookList": "$.[*]",
-,
       "name": "$.articlename",
       "author": "$.author",
       "bookUrl": "$.url_list",
@@ -17,7 +16,6 @@
     },
     "ruleExplore": {
       "bookList": "$.[*]",
-,
       "name": "$.articlename",
       "author": "$.author",
       "bookUrl": "$.url_list",

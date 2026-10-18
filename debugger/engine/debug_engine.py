@@ -169,7 +169,7 @@ class DebugEngine:
                 encoded_keyword = quote(keyword, safe='', encoding='utf-8')
             
             url = urljoin(base_url, url_path)
-            url = url.replace('{{key}}', encoded_keyword)
+            url = url.replace('{{key}}', encoded_keyword).replace('{{page}}', '1')
             
             method = options.get('method', 'GET')
             body = options.get('body', '')
@@ -185,7 +185,7 @@ class DebugEngine:
             }
         else:
             encoded_keyword = quote(keyword, safe='', encoding='utf-8')
-            url = urljoin(base_url, search_url.replace('{{key}}', encoded_keyword))
+            url = urljoin(base_url, search_url.replace('{{key}}', encoded_keyword).replace('{{page}}', '1'))
             return url, {'method': 'GET'}
     
     def _fetch_url(self, url: str, options: Dict[str, Any] = None) -> Tuple[str, int]:
@@ -640,7 +640,12 @@ class DebugEngine:
             
             if rule.tocUrl:
                 self.log("详情", "┌获取目录链接")
-                toc_url_raw = rule.tocUrl
+                try:
+                    toc_url_raw = analyzer.get_string(rule.tocUrl, is_url=True)
+                except:
+                    toc_url_raw = rule.tocUrl
+                if not toc_url_raw or toc_url_raw == rule.tocUrl:
+                    toc_url_raw = rule.tocUrl
                 
                 # 处理模板变量 {{$.field}}
                 if '{{' in toc_url_raw and '}}' in toc_url_raw and json_data:
@@ -695,7 +700,8 @@ class DebugEngine:
         start_time = time.time()
         
         try:
-            if not book_url:
+            toc_url = book_url
+            if not toc_url:
                 info_result = self.test_book_info(search_keyword=search_keyword)
                 if not info_result.success:
                     result.error = "获取书籍信息失败"

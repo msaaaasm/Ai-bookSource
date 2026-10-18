@@ -321,17 +321,16 @@ var _httpAjax = function(url, options, timeout) {
     
     try {
         var childProcess = require('child_process');
-        
-        var result = childProcess.execSync(
-            'python -c "import sys; sys.path.insert(0, \\'.' + '\\'); from debugger.js_engine import http_ajax; print(http_ajax(\\'' + url.replace(/'/g, "\\\\'") + '\\'))"',
-            { 
-                encoding: 'utf-8',
-                timeout: timeout / 1000 + 5,
-                maxBuffer: 50 * 1024 * 1024
-            }
-        );
-        
-        return result.trim();
+        var pyScript = 'import sys; sys.path.insert(0, "."); from debugger.js_engine import http_ajax; print(http_ajax(' + JSON.stringify(url) + '))';
+        var res = childProcess.spawnSync('python', ['-c', pyScript], {
+            encoding: 'utf-8',
+            timeout: timeout,
+            maxBuffer: 50 * 1024 * 1024
+        });
+        if (res.error) {
+            throw res.error;
+        }
+        return (res.stdout || '').trim();
     } catch (e) {
         console.log('[JS Engine] HTTP request error: ' + e.message);
         return 'Error: ' + e.message;
@@ -1005,9 +1004,8 @@ class LegadoJsEngine:
 {js_code}
 
 // ==================== Output ====================
-if (typeof body !== 'undefined' && body) {{
-    result = body;
-}}
+// In Legado, `result` holds the final output of the script
+
 
 console.log('<<<RESULT_START>>>');
 try {{

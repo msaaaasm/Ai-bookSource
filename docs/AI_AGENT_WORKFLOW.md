@@ -4,9 +4,10 @@
 This is an AI-driven tool for automatically generating book sources for the Legado reading Android app. The system analyzes website HTML structures and creates compliant JSON configurations using a knowledge-driven approach.
 
 ## Architecture
-- **Skill Package**: `SKILL.md` - Core AI agent logic with 23 specialized tools
+- **Skill Package**: `skill/SKILL.md` - Core AI agent logic with specialized toolkits
 - **Debug Engine**: `debugger/` - Python-based testing framework simulating Legado's Kotlin parser
-- **Knowledge Base**: `assets/` - 24.93MB of documentation, 1751 real book source examples
+- **Knowledge Base**: `assets/` & `knowledge/` - Extensive documentation and 1751 real book source examples
+- **Tools**: `tools/skill-creator/` - Skill evaluation and benchmarking toolkit
 - **Legado Source**: `legado/` - Official app source code for compatibility validation
 
 ## Critical Workflows
@@ -14,19 +15,16 @@ This is an AI-driven tool for automatically generating book sources for the Lega
 ### Testing Book Sources
 ```bash
 # Test a book source with search keyword
-python debugger/test_universal.py path/to/book_source.json -k "斗破苍穹"
+python debugger/test_universal.py book_sources/起点中文网.json -k "斗破苍穹"
 
 # Enable auto-fix with max attempts
-python debugger/test_universal.py path/to/book_source.json -k "keyword" --auto-fix
+python debugger/test_universal.py book_sources/起点中文网.json -k "斗破苍穹" --auto-fix
 ```
 
 ### Environment Setup
 ```bash
 # Install dependencies
 pip install -r debugger/requirements.txt
-
-# Run in Trae IDE with MCP protocol support
-# Skill package auto-loads from .trae/skills/
 ```
 
 ## Key Patterns & Conventions
@@ -47,7 +45,7 @@ pip install -r debugger/requirements.txt
 1. **Collect Info**: Query knowledge, detect encoding, fetch HTML
 2. **Review Rules**: Write rules, validate syntax, handle edge cases  
 3. **Create Source**: Generate complete JSON, debug test
-4. **Output JSON**: Save to `output/book_sources/`
+4. **Output JSON**: Save to `book_sources/`
 5. **Self-Evolve**: Learn from successful patterns
 
 ### Encoding Handling
@@ -61,16 +59,16 @@ pip install -r debugger/requirements.txt
 - Parse errors → validate HTML structure first
 
 ## Integration Points
-- **Trae IDE**: MCP protocol for skill activation
+- **Universal AI Assistant**: Any AI tool supporting custom instructions or skills (Antigravity, Claude Code, Cursor, Windsurf, Trae, etc.)
 - **Web Scraping**: requests + BeautifulSoup with encoding detection
 - **JSON Schema**: Strict validation against Legado's BookSource model
 - **External APIs**: None - fully self-contained analysis
 
 ## File Organization
-- `config/agent_llm_config.json` - LLM parameters (doubao-seed-1-8-251228)
+- `config/agent_llm_config.json` - LLM parameters
 - `assets/knowledge_base/` - 1751 real source examples for pattern matching
 - `debugger/engine/` - Core parsing logic ported from Kotlin
-- `output/book_sources/` - Generated JSON outputs
+- `book_sources/` - Generated JSON outputs
 
 ## Quality Assurance
 - 90%+ accuracy through real HTML analysis
@@ -82,5 +80,4 @@ pip install -r debugger/requirements.txt
 - Skipping knowledge queries → invalid rules
 - Using generic CSS selectors → parsing failures  
 - Ignoring encoding detection → garbled text
-- Manual JSON editing → schema violations</content>
-<parameter name="filePath">d:\pack_project_1771468148809\legadoSkill\.github\copilot-instructions.md
+- Manual JSON editing → schema violations

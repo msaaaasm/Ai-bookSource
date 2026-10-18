@@ -110,6 +110,18 @@ class AnalyzeRule:
         self._init_content(content)
         return self
     
+    def _resolve_url(self, url: str) -> str:
+        if not url:
+            return ""
+        url = url.strip()
+        if url.startswith('//'):
+            return 'https:' + re.sub(r'^/+', '//', url)
+        if url.startswith('http://') or url.startswith('https://'):
+            return url
+        if self.base_url:
+            return urljoin(self.base_url, url)
+        return url
+    
     def get_string(self, rule: str, is_url: bool = False) -> str:
         if not rule:
             return ""
@@ -227,9 +239,11 @@ class AnalyzeRule:
                     if key.startswith('$.'):
                         key = key[2:]
                     result = result.get(key, '')
+                elif rule in result:
+                    # 按照Legado源码: 键值直接访问 result[sourceRule.rule]
+                    result = result.get(rule, '')
                 else:
                     # 不包含提取操作，直接返回规则字符串（比如URL模板）
-                    # 这是关键修复：当规则不包含提取操作时，直接返回规则本身
                     result = rule
             elif isinstance(result, list) and mode != Mode.Json and mode != Mode.XPath:
                 # 列表类型，返回第一个元素或使用JSON规则
@@ -799,16 +813,12 @@ class AnalyzeRule:
             elif rule in ("href", "@href"):
                 if hasattr(element, 'get'):
                     href = element.get('href', '')
-                    if href and self.base_url and not href.startswith('http'):
-                        return urljoin(self.base_url, href)
-                    return href
+                    return self._resolve_url(href)
                 return ""
             elif rule in ("src", "@src"):
                 if hasattr(element, 'get'):
                     src = element.get('src', '')
-                    if src and self.base_url and not src.startswith('http'):
-                        return urljoin(self.base_url, src)
-                    return src
+                    return self._resolve_url(src)
                 return ""
             elif rule in ("textNodes", "@textNodes"):
                 # 按照Legado源码: AnalyzeByJSoup.kt 第239-251行
@@ -970,18 +980,14 @@ class AnalyzeRule:
                 if hasattr(e, 'get'):
                     href = e.get('href', '')
                     if href:
-                        if self.base_url and not href.startswith('http'):
-                            return urljoin(self.base_url, href)
-                        return href
+                        return self._resolve_url(href)
             return ""
         elif extract_type == "src":
             for e in elements:
                 if hasattr(e, 'get'):
                     src = e.get('src', '')
                     if src:
-                        if self.base_url and not src.startswith('http'):
-                            return urljoin(self.base_url, src)
-                        return src
+                        return self._resolve_url(src)
             return ""
         
         return ""
@@ -1071,6 +1077,9 @@ class AnalyzeRule:
         
         result_str = str(result) if not isinstance(result, str) else result
         
+        # 将 Legado (Java/Kotlin) 风格的正则捕获组替换符 ($1, $2, ...) 转换为 Python (re.sub) 风格 (\g<1>, \g<2>, ...)
+        py_replacement = re.sub(r'\$(\d+)', r'\\g<\1>', replacement) if replacement else replacement
+        
         try:
             if replace_first:
                 # ##match##replace### 获取第一个匹配到的结果并进行替换
@@ -1078,13 +1087,13 @@ class AnalyzeRule:
                 if match:
                     # 获取匹配到的内容，然后进行替换
                     matched_text = match.group(0)
-                    return matched_text.replace(replace_regex, replacement, 1) if replacement else matched_text
+                    return matched_text.replace(replace_regex, py_replacement, 1) if py_replacement else matched_text
                 else:
                     return ""
             else:
                 # ##match##replace 替换
                 try:
-                    return re.sub(replace_regex, replacement, result_str)
+                    return re.sub(replace_regex, py_replacement, result_str)
                 except:
                     # 如果正则无效，进行字面替换
                     return result_str.replace(replace_regex, replacement)
@@ -1092,23 +1101,14 @@ class AnalyzeRule:
             return result_str
 
     def _apply_replace_regex(self, result: Any, source_rule: SourceRule) -> str:
-        result_str = str(result) if not isinstance(result, str) else result
-        
         if not source_rule.replace_regex:
-            return result_str
-        
-        try:
-            if source_rule.replace_first:
-                match = re.search(source_rule.replace_regex, result_str)
-                if match:
-                    if source_rule.replacement:
-                        return re.sub(source_rule.replace_regex, source_rule.replacement, result_str, count=1)
-                    return match.group(0)
-                return source_rule.replacement
-            else:
-                return re.sub(source_rule.replace_regex, source_rule.replacement, result_str)
-        except Exception:
-            return result_str
+            return str(result) if not isinstance(result, str) else result
+        return self._apply_legado_replace_regex(
+            result,
+            source_rule.replace_regex,
+            source_rule.replacement,
+            source_rule.replace_first
+        )
     
     def _eval_js(self, js_code: str, result: Any) -> Any:
         """执行JS代码 - 使用真实的JS引擎"""
