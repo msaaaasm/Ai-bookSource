@@ -103,6 +103,23 @@ class AnalyzeUrl:
         self.rule_url = self.m_url
         
         url = self.m_url
+        
+        if '<js>' in url and '</js>' in url:
+            try:
+                from debugger.js_engine import execute_js
+                js_code = re.search(r'<js>([\s\S]*?)</js>', url).group(1)
+                context = {
+                    'key': self.key,
+                    'page': self.page,
+                    'baseUrl': self.base_url,
+                    'result': ''
+                }
+                res = execute_js(js_code, context=context)
+                if res.success and res.result:
+                    url = str(res.result).strip()
+            except Exception:
+                pass
+
         url = self._replace_params(url)
         
         if ',' in url:
@@ -125,6 +142,18 @@ class AnalyzeUrl:
         self.url_no_query = self._get_url_no_query(url)
     
     def _replace_params(self, url: str) -> str:
+        if '{{getDomain()}}' in url:
+            domain = self.base_url or "https://www.wnacg.com"
+            if hasattr(self.source, 'loginInfo') and self.source.loginInfo:
+                try:
+                    info = json.loads(self.source.loginInfo) if isinstance(self.source.loginInfo, str) else self.source.loginInfo
+                    if info.get('自定义域名'):
+                        domain = info['自定义域名'].strip()
+                    elif info.get('预设线路'):
+                        domain = info['预设线路'].strip()
+                except Exception:
+                    pass
+            url = url.replace('{{getDomain()}}', domain)
         url = url.replace('{{key}}', quote(self.key) if self.key else "")
         url = url.replace('{{page}}', str(self.page))
         url = url.replace('{{keyNoEncode}}', self.key)

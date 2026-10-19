@@ -40,6 +40,22 @@ python debugger/test_universal.py book_sources/起点中文网.json --url https:
 
 ---
 
+## 📌 书源设计与命名规范（全局通用要求）
+
+后续所有由 AI 生成或维护的书源，必须严格遵循以下标准：
+
+1. **书源命名 (`bookSourceName`)**：
+   - **纯中文名称**：仅保留网站/平台自身的纯中文名称（如 `绅士漫画`、`笔趣阁`）。
+   - **严禁网址与域名后缀**：严禁出现如 `(wnacg.com)`、`[biquge.tv]`、`.com` 等任何链接文字。
+   - **严禁图标与 Emoji**：严禁出现如 `🎨`、`📚`、`🔥` 等任何表情图标符号。
+2. **源分组 (`bookSourceGroup`)**：
+   - **默认改为空字符串 `""`**：不进行任何额外分组设置（不预设 `漫画`、`R18`、`小说` 等），由用户在阅读 App 中自由分组。
+3. **应用内网页浏览**：
+   - 当书源需要引导用户打开网站（如发布页、验证页、官网、登录页等）时，**必须在阅读 App 内直接打开**，使用内置接口：`java.startBrowser(url, title)` 或 `java.showBrowser(url)`。
+   - **严禁直接跳转系统外部浏览器**（例如在 `loginUi` 的按键 `action` 中严禁直接写绝对 http/https URL，必须绑定 JS 函数调用 `java.startBrowser`）。
+
+---
+
 ## 完整目录结构
 
 ```

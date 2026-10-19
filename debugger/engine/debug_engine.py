@@ -145,6 +145,20 @@ class DebugEngine:
         
         base_url = self.book_source.bookSourceUrl
         
+        # 处理 {{getDomain()}} 动态域名解析
+        if '{{getDomain()}}' in search_url:
+            domain = base_url
+            if hasattr(self.book_source, 'loginInfo') and self.book_source.loginInfo:
+                try:
+                    info = json.loads(self.book_source.loginInfo) if isinstance(self.book_source.loginInfo, str) else self.book_source.loginInfo
+                    if info.get('自定义域名'):
+                        domain = info['自定义域名'].strip()
+                    elif info.get('预设线路'):
+                        domain = info['预设线路'].strip()
+                except Exception:
+                    pass
+            search_url = search_url.replace('{{getDomain()}}', domain)
+
         # 使用Legado真实的paramPattern: 只在{前面切分
         # Pattern.compile("\\s*,\\s*(?=\\{)")
         param_pattern = re.compile(r'\s*,\s*(?=\{)')
@@ -1251,7 +1265,8 @@ class DebugEngine:
                 'error': info_result.error,
             }
             
-            toc_result = self.test_toc(book_url)
+            toc_url = info_result.data.tocUrl if (info_result.data and info_result.data.tocUrl) else book_url
+            toc_result = self.test_toc(toc_url)
             results['tests']['toc'] = {
                 'success': toc_result.success,
                 'message': toc_result.message,

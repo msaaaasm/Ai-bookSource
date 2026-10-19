@@ -39,6 +39,47 @@ description: "Legado书源驯兽师，自动化分析网站结构生成书源，
                         如果仍然无法确定 → 告诉用户去Legado APP中真实测试
 ```
 
+### 🚨 书源命名、分组与内置浏览强制规范（全局核心约束）
+
+所有新生成或修改的书源必须严格遵守以下规范：
+
+1. **书源命名 (`bookSourceName`)**：
+   - **必须且仅使用纯中文名称**（例如：`绅士漫画`、`笔趣阁`、`起点中文`）。
+   - **严禁包含网址或域名后缀**（严禁出现如 `(wnacg.com)`、`[biquge.tv]`、`.com` 等字样）。
+   - **严禁包含任何图标或 Emoji**（严禁出现如 `🎨`、`📚`、`🔥` 等任何装饰符号）。
+
+2. **书源分组 (`bookSourceGroup`)**：
+   - **必须改为空字符串 `""`**（即不预设任何额外分组，如严禁填写 `漫画,R18`、`小说` 等），保持干净，交由用户在阅读 App 中自由分组管理。
+
+3. **内置网页浏览交互（严禁跳转外部浏览器）**：
+   - 当书源中需要打开网页（如发布页、验证页、官网、登录页等）时，**必须直接在阅读 App 内打开**，使用阅读内置浏览器接口：
+     - 首选：`java.startBrowser(url, title)`（在阅读 App 内全屏打开 `WebViewActivity`）
+     - 备选：`java.showBrowser(url)`（在阅读 App 内弹出底部 Web 弹窗 `BottomWebViewDialog`）
+   - **严禁调用系统外部浏览器**：
+     - 在 `loginUi` 的按键 `action` 中，**严禁直接使用绝对 http/https URL**（因为阅读源码中 `if (action.isAbsUrl()) context?.openUrl(action)` 会直接调起外部浏览器应用）。
+     - 正确做法：按钮 action 必须绑定 JS 函数（例如 `action: "openPublish('https://...')"`)，在 JS 函数中调用 `java.startBrowser(url, "发布页")`。
+
+### 🛡️ WAF拦截、验证弹窗与 JS 引擎兼容性红线（防止验证死循环与空白列表）
+
+在处理带有 WAF / 防火墙 / 移动端 API 的书源时，必须严格遵守以下四大开发红线（详见 [WAF拦截与弹窗死循环分析及规避指南](file:///d:/Codes/项目/AiWritingLegado/docs/WAF拦截与弹窗死循环分析及规避指南.md)）：
+
+1. **严禁在 `loginCheckJs` 中使用全局模糊关键字匹配（避免无限弹窗死循环）**：
+   - 现代大型站点（如阅文集团 `m.qidian.com`）即使在**完全正常的 200 OK 页面**中，前端也内置了带有 `x-waf-captcha-referer`、`安全验证` 等打点变量的 JS 脚本。
+   - 若在 `loginCheckJs` 中简单使用 `src.indexOf("x-waf-captcha") !== -1` 或包含“验证”，会导致每个正常页面都被误判为被拦截，进而调用 `java.startBrowserAwait(url)` 弹窗；用户验证后下一个请求依然包含该变量，从而陷入**不可打破的弹窗死循环**。
+   - **核心原则**：常规书源直接将 `loginCheckJs` 置空，交由阅读底层 OkHttp 拦截器自动处理过盾；如需校验，必须精准匹配特定 HTTP 状态码（如 401/403）或专属业务 JSON 标识。
+
+2. **严禁在校验拦截脚本中使用 `return java.connect(url)`（避免丢失请求头）**：
+   - 在 Legado 源码中，`java.connect(url)` 为裸 GET 请求，**不会携带当前 `AnalyzeUrl` 中配置的 HeaderMap（如 CSRF Token Cookie、Referer、UA 等）**。
+   - 在拦截后调用 `java.connect(url)` 会导致依赖 Header/Cookie 的接口（如排行榜、AJAX 数据）鉴权失败返回错误响应（如 `{"code": 1}`），在阅读中表现为“已经到底了~”或全空。
+
+3. **严禁依赖未在 Legado 规范中定义的 Java 对象方法（避免 Android 运行时报错崩溃）**：
+   - 真实 Android Legado 的 Rhino 1.8.0 引擎中，注入给 JS 运行时的 `java` 上下文对象（`AnalyzeUrl`/`AnalyzeRule`）**不存在 `java.randomUUID()`**。
+   - 生成 UUID 或随机串必须使用纯 JavaScript 原生标准实现：
+     `'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });`
+
+4. **会话与 Token 必须使用 `CookieStore` 持久化**：
+   - 需 CSRF Token 或 Session 的站点，必须先用 `java.getCookie(baseUrl, key)` 读取；不存在时才生成，并立即通过 `java.putCookie(baseUrl, key, val)` 存入持久化 Cookie 库，严禁每次请求都生成新随机 Token 导致服务端风控被拉黑。
+
 ### Legado源码关键文件位置
 
 | 功能 | 源码位置 |
