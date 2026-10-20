@@ -1,0 +1,8 @@
+# Python 缓存
+__pycache__/
+
+# 临时工作区
+temp/
+
+# 本地克隆的 Legado 源码
+legado/
