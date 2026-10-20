@@ -123,7 +123,7 @@ AiWritingLegado/
 │   ├── Legado知识库.txt            # 一页纸速查
 │   └── reference/                  # 真实书源、提示词、编码指南等
 ├── docs/
-│   ├── README.md                  # 排错文档导航
+│   ├── 1_README.md                  # 排错文档导航
 │   ├── BUG_FIXES.md               # 修复日志（开工先扫）
 │   ├── FINAL_CHECKLIST.md         # 提交前检查清单
 │   ├── TOC_PAGINATION_RULES.md    # 目录分页
