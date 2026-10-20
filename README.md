@@ -8,6 +8,8 @@
 >
 > **使用约束**：不要改动项目的目录结构（不要移动、重命名、删除或重组现有目录和文件）；不要修改 [`book_sources/`](book_sources/) 中与本次任务无关的书源文件。只有用户明确要求修改时才动。
 >
+> **最容易忽略的坑（非常重要）**：`bookUrlPattern` 不能误命中搜索页/列表页。若它把 `/search`、`/albums` 等路由算进详情页，阅读会在搜索阶段提前走详情页解析，最后只剩 1 条或直接空白。这个坑在 [docs/绅士漫画_搜索误判_修复.md](docs/绅士漫画_搜索误判_修复.md) 里有完整案例。
+>
 > 三条最容易违反的规则：书源名只用纯中文；`bookSourceGroup` 用 `""`；`nextContentUrl` 只用于同章下一页。
 
 > 本项目基于 [DandanLLab/legadoSkill](https://github.com/DandanLLab/legadoSkill) 修改和扩充。
