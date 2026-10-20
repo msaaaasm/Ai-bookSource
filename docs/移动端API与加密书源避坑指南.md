@@ -1,5 +1,8 @@
 # 移动端 API 与加密书源实战避坑指南
 
+> **文档定位**：API / 加密专题。最简红线见 [`../skill/SKILL.md`](../skill/SKILL.md) 的 1.10；
+> 对接移动端 REST API、动态签名、AES/DES 时读本文。
+>
 > 本指南总结自禁漫天堂移动端 API（JMComic App 原生接口）等复杂加密书源的排查与重构实战，系统剖析移动端 RESTful API、动态签名鉴权、AES/DES 密文载荷在 Legado（开源阅读 3.0）环境下的典型陷阱与终极解决方案。
 
 ---

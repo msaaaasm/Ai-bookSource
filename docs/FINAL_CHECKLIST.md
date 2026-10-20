@@ -134,6 +134,10 @@ python debugger/debugger_cli.py content book_sources/书名.json --url "<正文U
 - [ ] 列表规则能出书
 - [ ] 封面/作者/简介正常
 - [ ] 排行榜与分类冲突时已处理
+- [ ] **排版**：分组标题独占一行（`layout_flexBasisPercent: 1` + `layout_wrapBefore: true`）
+- [ ] **排版**：分组标题**不写 `url`**，尤其不能写 `"url": ""`（会打开首页/空列表）
+- [ ] **排版**：手机端按钮一行 2 个（`layout_flexBasisPercent: 0.46`），没有四列挤压
+- [ ] **排版**：每个按钮文字在手机上完整显示，没有被截断成“雜誌短…”
 
 ---
 

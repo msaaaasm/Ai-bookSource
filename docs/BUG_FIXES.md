@@ -2,6 +2,9 @@
 
 记录各书源、工具的已知问题及修复方案，供后续 AI 或开发者参考，**避免重踩坑**。
 
+> 开工先扫本页；需要专题深潜时按 [`README.md`](README.md) 的“快速索引（按现象）”跳转。
+> 每篇保持短小：只留现象、根因、修法和一句可推广经验；完整排查过程放专题文档或案例集。
+
 ---
 
 ## 起点中文 (qidian.com) — 搜索结果封面识别失败
@@ -55,7 +58,7 @@
 
 **问题时间**：2026-02-18  
 **文件**：`book_sources/起点图网.json`  
-**状态**：✅ 已修复（详见 [`起点图网书源错误分析与修复指南.md`](起点图网书源错误分析与修复指南.md)）
+**状态**：✅ 已修复（详见 [`案例-歌书网与起点图网.md`](案例-歌书网与起点图网.md) 的“案例二”）
 
 ### 现象摘要
 1. 搜索无结果（接口返回 404）
@@ -127,62 +130,94 @@ img@data-src||img@data-original||img@data-lazy||img@src
 
 ---
 
-## 绅士漫画 (wnacg.com) — 搜索只出 1 条 + 移动版布局与筛选
+## 绅士漫画 (wnacg 家族) — 移动版双布局失败 → PC 模板重建
 
-**问题时间**：2026-10-20  
-**文件**：`book_sources/绅士漫画.json`  
-**状态**：✅ 已修复
+**问题时间**：2026-10-20
+**文件**：`book_sources/绅士漫画.json`
+**状态**：✅ 已重建（PC 模板 + 登录 + 图片线路 + 多章目录）
 
-### 现象
+### 现象（演进）
 
-1. 在阅读 App 里搜索只返回 1 条结果。
-2. 网站搜索页（手机 Chrome）带“筛选”面板，但书源没有利用分类/标签/排序条件。
-3. 合集（多话）在移动版布局下目录只识别出 1 章。
+1. 搜索任意关键词只返回 1 条。
+2. 发现页有 4 个分组标题点开为空。
+3. 改成“手机 + 桌面双布局合并选择器”后，真机仍不稳定；最终按参考源改用桌面 PC 模板。
 
-### 根因
+### 根因（三个关键坑）
 
-- 站点按 UA 返回两套完全不同的 DOM：
-  - **PC（桌面 UA）**：`ul.cc > li.gallary_item`、`.pic_box`、`.title`、`.info_col`
-  - **移动（手机 UA）**：`ul#classify_container > li.cate-*`、`a.ImgA`、`a.txtA`、`span.info`
-- 原规则只写了 PC 选择器；App/WebView 使用移动 UA 时匹配不到列表，只剩一个误匹配项。
-- `bookUrlPattern` 只允许 `/photos/...`，而搜索结果实际是 `/photos-index-aid-...html`，详情页识别也会受影响。
-- `ruleBookInfo.tocUrl` 写成了字符串 `baseUrl`，不是合法规则，真机会拼成 `https://站点/baseUrl`。
-- 移动版合集章节在 `#dv-ch-list` 里，链接是 `photos-slide-aid-*`；原目录 JS 只认 PC 的 `a.tagshow`，因此只走单话兜底。
+#### 坑 1：`bookUrlPattern` 命中搜索页 → 搜索只剩 1 条
 
-### 修复
+`BookList.analyzeBookList(isSearch = true)` 会先判断搜索地址本身是否像详情页：
 
-1. `header` 改为手机 Chrome UA，和用户实际访问的移动版一致。
-2. `ruleSearch` / `ruleExplore` 改为**双布局合并选择器**：
-   - `bookList`: `ul#classify_container > li || ul.col_2 > li || div.itemBox || ul.cc > li.gallary_item`
-   - `name`: `a.txtA@text || a.ImgA > span:not(.sr_tags)@text || .itemTxt a.title@text || .title a@text || ...`
-   - `bookUrl`: `a.ImgA@href || .itemImg a@href || .pic_box a@href || .title a@href`
-   - `kind`: 从 `cate-N` 映射为中文分类（同人誌·漢化、單行本·漢化、AI圖集等）。
-   - `lastChapter` / `wordCount`: 用 JS 同时解析 `.info`、`.info_col`、`.itemTxt`。
-3. `bookUrlPattern` 的路径段分隔符从 `[/?]` 改为 `[-/?]`，覆盖 `photos-index-*`。
-4. `tocUrl` 改为 `""`，让 App 直接用详情页当目录页。
-5. 目录 JS 同时支持：
-   - 移动版 `#dv-ch-list li a`（章节名取 `<span>` 文本）
-   - PC 版 `a.tagshow`
-   - 单话兜底
-6. `searchUrl` 改为 `<js>`，保留原站筛选参数，并支持在关键词后用 `|` 追加条件：
-   - `关键词|cate=9`：只看分类 9（單行本·漢化）
-   - `关键词|xcate=9`：排除分类 9
-   - `关键词|tag=巨乳` / `关键词|xtag=蘿莉`：只看/屏蔽标签
-   - `关键词|u=作者` / `关键词|xu=作者`：只看/屏蔽投稿者
-   - `关键词|sort=day|week|month|year`：按今日/本周/本月/今年排序
-   - 多个条件用 `|` 分隔，例如 `無修正|cate=9|tag=巨乳|sort=month`
-   - 分类 ID 已写进 `bookSourceComment`
+```kotlin
+if (isSearch) bookSource.bookUrlPattern?.let {
+    if (baseUrl.matches(it.toRegex())) {
+        getInfoItem(...)   // 把搜索页当成一本书解析
+        return bookList    // 直接返回，只有 1 条
+    }
+}
+```
+
+旧正则包含 `(?:photos|albums|comment|search)[-/?]`，搜索地址
+`https://站点/search/index.php?...` 完全命中。注意 Kotlin `String.matches` 是整串匹配，
+正则必须覆盖整个 URL。
+
+**修复**：只匹配单本详情页，例如
+`https?://[^/]+/photos-index-aid-[0-9]+[.]html`，不要包含 `search` / `albums` / `category`。
+
+#### 坑 2：`exploreUrl` 分组标题写成 `"url": ""` → 分类空白
+
+空串会被 `NetworkUtils.getAbsoluteURL(bookSourceUrl, "")` 解析成站点首页；
+首页 DOM（如 `ul.col_3_2 > li`）通常不在 `ruleExplore.bookList` 里 → 0 条 → 空白。
+
+**正确写法**：分组标题只写 `title` + `style`，**省略 `url`**
+（`ExploreKind.url = null`，点击无动作）。不要写 `"url": ""`。
+文本格式的 `exploreUrl` 没有“无链接标题”能力；需要分组标题时改用 JSON 数组。
+
+#### 坑 3：移动/桌面双布局混合规则
+
+站点按 UA 返回两套 DOM。曾用：
+`ul#classify_container > li || ul.col_2 > li || div.itemBox || ul.cc > li.gallary_item`
+并固定手机 UA。该方案在模拟器可出结果，但真机仍不稳定，且搜索/发现/详情各自有多套布局，维护成本高。
+
+**最终修复**：固定**桌面 Chrome UA**，只写 PC 一套 DOM（`div.gallary_wrap > ul > li` 等），
+不再混合两套模板。
+
+### 最终书源要点
+
+- `bookSourceUrl`：`https://www.wn10.shop/`（参考源当前可用域名；换域名只改这里）。
+- `header`：桌面 Chrome UA + Referer；站点无 UA 会 403。
+- 搜索/发现列表：`div.gallary_wrap > ul > li`、`.info .title a`、`.pic_box img`、`.info_col`。
+- 详情：`div#bodywrap h2`、`.asTB .uwthumb img`，分类/页数正则；简介保留参考源的 `<useweb>` 图床线路卡片。
+- 正文：`page_url` 提取 + `img1~5.wnimg2.cfd` 线路探测/缓存/TTL。
+- 登录：参考源的账号/发布页/检查登录/取最新地址，另加图片线路测速与清缓存。
+- 目录：`photos-slide-aid-*` → `photos-item-aid-*`，跳过 `reader-btn`；单话兜底“全一話”；
+  合集章节分页用 JS `nextTocUrl`，仅当本页有章节链接时才跟随“後頁”
+  （单话详情页底部也有 paginator，不能盲跟）。
+- 发现页：9 组 37 个入口；分组标题独占一行且不写 `url`；手机端按钮一行 2 个（`0.46`）。
+- 搜索筛选：`关键词|cate=9`、`关键词|tag=巨乳`、`关键词|sort=month`。
+
+### 历史尝试（已废弃，勿照抄）
+
+- 手机 UA + `ul#classify_container > li || ul.col_2 > li || div.itemBox || ul.cc > li.gallary_item` 的合并列表规则。
+- 通过 `getDomain()` 读取登录信息里的自定义域名（与参考源登录体系冲突）。
+- `exploreUrl` 分组标题写 `"url": ""`。
+
+> 这些方案都曾“看起来能跑”，但分别在真机、登录、发现页上出问题；保留在此仅作警示。
 
 ### 验证
 
-- `python debugger/debugger_cli.py test book_sources/绅士漫画.json --keyword "無修正"`：搜索 24 条、详情、目录、正文全部通过。
-- 合集 `photos-index-aid-396541.html`：目录识别 11 章。
-- `無修正|cate=9`：返回 24 条，分类均为「單行本·漢化」。
-- `無修正|sort=month`：正常返回。
+- `python debugger/debugger_cli.py test ... --keyword "無修正"`：搜索 24 条、详情、目录、正文通过。
+- 合集 `396541`：11 章；大合集 `389914`：分页 6 页合并 67 章。
+- 37 个发现入口第 1/2 页实抓均有列表；740 个列表项核心字段非空。
+- 真机需确认：登录、图片线路切换、`<useweb>` 简介卡片。
 
 ### 经验推广
 
-> 同一站点对手机/桌面 UA 返回不同 DOM 时，**不要只按一种布局写死选择器**。优先用 `||` 合并两套选择器，或把 UA 固定成你实际验证过的那一套。搜索列表、发现列表、详情、目录都可能各有一套布局。
+1. `bookUrlPattern` 只匹配详情页，绝不能匹配搜索/列表页。
+2. 发现页分组标题只写 `title/style`，不写 `url`；空串会落到首页。
+3. 站点按 UA 分流时，固定一套 UA + 一套 DOM；不要在同一规则里混合两套布局。
+4. 有登录/动态域名/图片线路需求的源，优先复用已验证参考源，再替换发现页布局。
+5. JS 规则统一 `result=...; result;`；能用正则就不用 `Packages.org.jsoup`，便于本地调试。
 
 ---
 

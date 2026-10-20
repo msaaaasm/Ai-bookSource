@@ -519,6 +519,59 @@ POST（选项是 JSON 字符串）：
 - 分类和排行榜冲突时，优先用分类的真实链接。
 - 发现页的列表规则放在 `ruleExplore`，字段与 `ruleSearch` 类似。
 
+#### 发现页排版（手机端优先，写源时必须检查）
+
+推荐用 **JSON 数组** 写法，每个条目可以带 `style`：
+
+```json
+[
+  {
+    "title": "🆕 最新更新",
+    "style": {
+      "layout_flexBasisPercent": 1,
+      "layout_wrapBefore": true,
+      "layout_justifySelf": "flex_start"
+    }
+  },
+  {
+    "title": "最近更新",
+    "url": "/albums-index-page-{{page}}.html",
+    "style": { "layout_flexBasisPercent": 0.46 }
+  },
+  {
+    "title": "同人誌",
+    "url": "/albums-index-page-{{page}}-cate-5.html",
+    "style": { "layout_flexBasisPercent": 0.46 }
+  }
+]
+```
+
+必须遵守：
+
+1. **分组标题独占一行**：`layout_flexBasisPercent: 1` + `layout_wrapBefore: true`，
+   需要左对齐时再加 `layout_justifySelf: "flex_start"`。
+2. **分组标题不要写 `url`**，连 `"url": ""` 也不要写。
+   - 省略 `url`：`ExploreKind.url = null`，点击无动作，只作为标题展示。
+   - 写 `"url": ""`：空地址会被解析成源根地址，点开通常是首页或空列表（常见“发现页空白”根因）。
+   - 文本格式的 `exploreUrl` 没有“无链接标题”能力；需要分组标题时改用 JSON 数组。
+3. **手机端分类按钮一行 2 个**：`layout_flexBasisPercent: 0.46`。
+   - 不要用 `0.23`（一行 4 个）：中文分类名会被截断成“雜誌短…”。
+   - 不要为了减少滚动而压窄按钮；宁可多几行。
+4. 同一分组的按钮文字尽量等长；过长的分类名要么缩短，要么给它更宽的 `layout_flexBasisPercent`。
+5. 需要点击执行动作的条目（清缓存、测速等）用：
+
+   ```json
+   {
+     "title": "🧹 清缓存",
+     "type": "button",
+     "action": "source.put('imgH','');java.toast('已清除')",
+     "style": { "layout_flexBasisPercent": 0.46 }
+   }
+   ```
+
+6. 修改 `exploreUrl` 后，Legado 的发现分类缓存 key 会变化
+   （`MD5(bookSourceUrl + exploreUrl)`），重新导入/刷新书源即可看到新布局。
+
 ### 3.7 规则字段表
 
 | 对象 | 常用字段 |

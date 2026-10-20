@@ -81,6 +81,7 @@ python debugger/debugger_cli.py search book_sources/起点中文.json --keyword 
 8. **选择器**：优先使用 `text.文本`、`class.xxx`、数字索引 `.0` / `.-1`；不要依赖 `:contains()`。
 9. **JS 兼容**：Legado 使用 Rhino 1.8.0。不要调用未注入的 Java 方法（如 `java.randomUUID()`）；从 `java.getString()` / `java.ajax()` 拿到的字符串先用 `String(...)` 包装。
 10. **WAF**：常规站点 `loginCheckJs` 保持为空；不要用全局模糊关键字判断拦截，详见 [`docs/WAF拦截与弹窗死循环分析及规避指南.md`](docs/WAF拦截与弹窗死循环分析及规避指南.md)。
+11. **发现页排版**：分组标题独占一行且**不写 `url`**；手机端分类按钮一行 2 个（`layout_flexBasisPercent: 0.46`），不要用 `0.23` 排四列，否则中文分类名会被截断。完整写法见 [`skill/SKILL.md`](skill/SKILL.md)。
 
 ---
 
@@ -91,7 +92,7 @@ python debugger/debugger_cli.py search book_sources/起点中文.json --keyword 
 | [`起点中文.json`](book_sources/起点中文.json) | 起点中文 | 文字 | 移动端搜索 + 请求头/WAF 适配 + 懒加载封面兜底 |
 | [`起点图网.json`](book_sources/起点图网.json) | 起点图网 | 文字 | 网文数据/榜单/书单，非正文站 |
 | [`禁漫天堂.json`](book_sources/禁漫天堂.json) | 禁漫天堂 | 图片 | 高防漫画站、WebView、图片解密 |
-| [`绅士漫画.json`](book_sources/绅士漫画.json) | 绅士漫画 | 图片 | 移动版布局 + 搜索筛选（`关键词|cate=9`）+ 合集目录 |
+| [`绅士漫画.json`](book_sources/绅士漫画.json) | 绅士漫画 | 图片 | PC 模板 + 动态域名/发布页 + 登录 + 图片线路自动切换 + 搜索筛选（`关键词|cate=9`）+ 合集目录 |
 
 参考稿和变体（未按最终命名规范整理）在 [`knowledge/reference/书源变体/`](knowledge/reference/书源变体/)。
 
@@ -131,8 +132,7 @@ AiWritingLegado/
 │   ├── WAF拦截与弹窗死循环分析及规避指南.md
 │   ├── 移动端API与加密书源避坑指南.md
 │   ├── 禁漫天堂与高防漫画站书源实战避坑指南.md
-│   ├── 起点图网书源错误分析与修复指南.md
-│   └── 歌书网书源错误分析与修复.md
+│   └── 案例-歌书网与起点图网.md     # 单站完整案例合集
 ├── book_sources/                  # 成品书源 JSON
 ├── debugger/
 │   ├── debugger_cli.py            # 调试器命令行入口
@@ -197,6 +197,7 @@ git clone https://github.com/gedoor/legado.git legado/
 | 处理 WAF/验证码 | [`docs/WAF拦截与弹窗死循环分析及规避指南.md`](docs/WAF拦截与弹窗死循环分析及规避指南.md) |
 | 处理移动端 API/加密 | [`docs/移动端API与加密书源避坑指南.md`](docs/移动端API与加密书源避坑指南.md) |
 | 处理漫画/高防站 | [`docs/禁漫天堂与高防漫画站书源实战避坑指南.md`](docs/禁漫天堂与高防漫画站书源实战避坑指南.md) |
+| 看完整单站排查案例 | [`docs/案例-歌书网与起点图网.md`](docs/案例-歌书网与起点图网.md) |
 | 找相似真实书源 | [`assets/knowledge_base/book_sources/`](assets/knowledge_base/book_sources/) |
 | 看历史旧资料 | [`archive/`](archive/)（**不要当现行规范**） |
 
@@ -208,8 +209,10 @@ git clone https://github.com/gedoor/legado.git legado/
 2. **知识细节**放 `knowledge/`，按 [`knowledge/README.md`](knowledge/README.md) 的导航归档。
 3. **排错案例**放 `docs/`，结构固定为：现象 → 根因 → 修复 → 可推广经验。
 4. 每修复一个真实书源问题，在 [`docs/BUG_FIXES.md`](docs/BUG_FIXES.md) 补一条摘要。
-5. 旧智能体资料、历史技能版本、重复文件统一放 `archive/`，不参与日常检索。
-6. 不要在仓库里提交 `__pycache__`、`temp/`、`legado/`、日志文件。
+5. **docs 去重**：同一主题只保留一个入口；单站案例优先合并进现有案例集，不要新建平行文档。
+   已废弃的方案不要直接删光，在 `BUG_FIXES` 的“历史尝试（已废弃）”里留一段警示即可。
+6. 旧智能体资料、历史技能版本、重复文件统一放 `archive/`，不参与日常检索。
+7. 不要在仓库里提交 `__pycache__`、`temp/`、`legado/`、日志文件。
 
 ---
 

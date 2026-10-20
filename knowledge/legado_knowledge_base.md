@@ -1973,6 +1973,11 @@ getResponse(): Response
 ]
 ```
 
+> **发现页排版**：手机端推荐用 JSON 数组写法；分组标题独占一行且**不写 `url`**
+> （不要写 `"url": ""`），分类按钮一行 2 个（`layout_flexBasisPercent: 0.46`）。
+> 不要用 `0.23` 排四列，中文分类名会被截断。完整规范见
+> [`skill/SKILL.md`](../skill/SKILL.md) 的 3.6 节。
+
 ---
 
 ## 附录：快速参考
