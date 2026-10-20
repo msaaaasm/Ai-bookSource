@@ -127,4 +127,63 @@ img@data-src||img@data-original||img@data-lazy||img@src
 
 ---
 
+## 绅士漫画 (wnacg.com) — 搜索只出 1 条 + 移动版布局与筛选
+
+**问题时间**：2026-10-20  
+**文件**：`book_sources/绅士漫画.json`  
+**状态**：✅ 已修复
+
+### 现象
+
+1. 在阅读 App 里搜索只返回 1 条结果。
+2. 网站搜索页（手机 Chrome）带“筛选”面板，但书源没有利用分类/标签/排序条件。
+3. 合集（多话）在移动版布局下目录只识别出 1 章。
+
+### 根因
+
+- 站点按 UA 返回两套完全不同的 DOM：
+  - **PC（桌面 UA）**：`ul.cc > li.gallary_item`、`.pic_box`、`.title`、`.info_col`
+  - **移动（手机 UA）**：`ul#classify_container > li.cate-*`、`a.ImgA`、`a.txtA`、`span.info`
+- 原规则只写了 PC 选择器；App/WebView 使用移动 UA 时匹配不到列表，只剩一个误匹配项。
+- `bookUrlPattern` 只允许 `/photos/...`，而搜索结果实际是 `/photos-index-aid-...html`，详情页识别也会受影响。
+- `ruleBookInfo.tocUrl` 写成了字符串 `baseUrl`，不是合法规则，真机会拼成 `https://站点/baseUrl`。
+- 移动版合集章节在 `#dv-ch-list` 里，链接是 `photos-slide-aid-*`；原目录 JS 只认 PC 的 `a.tagshow`，因此只走单话兜底。
+
+### 修复
+
+1. `header` 改为手机 Chrome UA，和用户实际访问的移动版一致。
+2. `ruleSearch` / `ruleExplore` 改为**双布局合并选择器**：
+   - `bookList`: `ul#classify_container > li || ul.col_2 > li || div.itemBox || ul.cc > li.gallary_item`
+   - `name`: `a.txtA@text || a.ImgA > span:not(.sr_tags)@text || .itemTxt a.title@text || .title a@text || ...`
+   - `bookUrl`: `a.ImgA@href || .itemImg a@href || .pic_box a@href || .title a@href`
+   - `kind`: 从 `cate-N` 映射为中文分类（同人誌·漢化、單行本·漢化、AI圖集等）。
+   - `lastChapter` / `wordCount`: 用 JS 同时解析 `.info`、`.info_col`、`.itemTxt`。
+3. `bookUrlPattern` 的路径段分隔符从 `[/?]` 改为 `[-/?]`，覆盖 `photos-index-*`。
+4. `tocUrl` 改为 `""`，让 App 直接用详情页当目录页。
+5. 目录 JS 同时支持：
+   - 移动版 `#dv-ch-list li a`（章节名取 `<span>` 文本）
+   - PC 版 `a.tagshow`
+   - 单话兜底
+6. `searchUrl` 改为 `<js>`，保留原站筛选参数，并支持在关键词后用 `|` 追加条件：
+   - `关键词|cate=9`：只看分类 9（單行本·漢化）
+   - `关键词|xcate=9`：排除分类 9
+   - `关键词|tag=巨乳` / `关键词|xtag=蘿莉`：只看/屏蔽标签
+   - `关键词|u=作者` / `关键词|xu=作者`：只看/屏蔽投稿者
+   - `关键词|sort=day|week|month|year`：按今日/本周/本月/今年排序
+   - 多个条件用 `|` 分隔，例如 `無修正|cate=9|tag=巨乳|sort=month`
+   - 分类 ID 已写进 `bookSourceComment`
+
+### 验证
+
+- `python debugger/debugger_cli.py test book_sources/绅士漫画.json --keyword "無修正"`：搜索 24 条、详情、目录、正文全部通过。
+- 合集 `photos-index-aid-396541.html`：目录识别 11 章。
+- `無修正|cate=9`：返回 24 条，分类均为「單行本·漢化」。
+- `無修正|sort=month`：正常返回。
+
+### 经验推广
+
+> 同一站点对手机/桌面 UA 返回不同 DOM 时，**不要只按一种布局写死选择器**。优先用 `||` 合并两套选择器，或把 UA 固定成你实际验证过的那一套。搜索列表、发现列表、详情、目录都可能各有一套布局。
+
+---
+
 *最后更新：2026-10-20*

@@ -142,9 +142,25 @@ class DebugEngine:
         search_url = self.book_source.searchUrl
         if not search_url:
             return "", {}
-        
+
         base_url = self.book_source.bookSourceUrl
-        
+
+        # 支持 <js>...</js> 形式的 searchUrl（Legado 原生支持）
+        if '<js>' in search_url and '</js>' in search_url:
+            try:
+                from debugger.js_engine import execute_js
+                js_code = re.search(r'<js>([\s\S]*?)</js>', search_url).group(1)
+                js_result = execute_js(js_code, context={
+                    'key': keyword,
+                    'page': 1,
+                    'baseUrl': base_url,
+                    'result': '',
+                })
+                if js_result.success and js_result.result:
+                    search_url = str(js_result.result).strip()
+            except Exception:
+                pass
+
         # 处理 {{getDomain()}} 动态域名解析
         if '{{getDomain()}}' in search_url:
             domain = base_url

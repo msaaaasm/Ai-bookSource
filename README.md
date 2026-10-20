@@ -6,6 +6,8 @@
 
 > **给 AI 智能体（从这里开始）**：按 [`skill/SKILL.md`](skill/SKILL.md) 的流程工作；按任务查 [`knowledge/README.md`](knowledge/README.md)；开工前扫 [`docs/BUG_FIXES.md`](docs/BUG_FIXES.md)；交付前用 [`docs/FINAL_CHECKLIST.md`](docs/FINAL_CHECKLIST.md) 自检。本仓库不依赖任何专用 MCP 工具。
 >
+> **使用约束**：不要改动项目的目录结构（不要移动、重命名、删除或重组现有目录和文件）；不要修改 [`book_sources/`](book_sources/) 中与本次任务无关的书源文件。只有用户明确要求修改时才动。
+>
 > 三条最容易违反的规则：书源名只用纯中文；`bookSourceGroup` 用 `""`；`nextContentUrl` 只用于同章下一页。
 
 > 本项目基于 [DandanLLab/legadoSkill](https://github.com/DandanLLab/legadoSkill) 修改和扩充。
@@ -89,7 +91,7 @@ python debugger/debugger_cli.py search book_sources/起点中文.json --keyword 
 | [`起点中文.json`](book_sources/起点中文.json) | 起点中文 | 文字 | 移动端搜索 + 请求头/WAF 适配 + 懒加载封面兜底 |
 | [`起点图网.json`](book_sources/起点图网.json) | 起点图网 | 文字 | 网文数据/榜单/书单，非正文站 |
 | [`禁漫天堂.json`](book_sources/禁漫天堂.json) | 禁漫天堂 | 图片 | 高防漫画站、WebView、图片解密 |
-| [`绅士漫画.json`](book_sources/绅士漫画.json) | 绅士漫画 | 图片 | 漫画站 |
+| [`绅士漫画.json`](book_sources/绅士漫画.json) | 绅士漫画 | 图片 | 移动版布局 + 搜索筛选（`关键词|cate=9`）+ 合集目录 |
 
 参考稿和变体（未按最终命名规范整理）在 [`knowledge/reference/书源变体/`](knowledge/reference/书源变体/)。
 
