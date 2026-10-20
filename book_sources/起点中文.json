@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "bookSourceComment": "起点中文网 (qidian.com) 官方正版高阶书源\n1. 【基础网址】：严格绑定官方主网域 https://www.qidian.com ，网络数据交互全面对接移动端网关 (m.qidian.com)，完美穿透 PC 端 WAF 202 拦截。\n2. 【段评交互革新】：告别全文段评文字污染！默认采用「章末精选汇总」模式，正文段末仅附带极简气泡角标 (💬)，最热书友评论统一在章末优雅呈现；支持在源设置中一键切换「纯净正文模式(极速纯享)」、「弹窗点开模式(内置WebView查看)」与「内嵌热评模式」；同时内置了标准 ruleReview 规则，无缝适配 LegadoT 等修改版客户端的原生段评气泡与点击弹窗互动。\n3. 【登录与账号同步】：源登录界面支持在阅读 App 内置浏览器一键打开起点官方 H5 登录页面（支持手机验证码与账号密码），支持实时检测登录态及用户昵称、一键清除登录缓存 Cookie。\n4. 【彻底解决验证弹窗死循环】：移动端接口天然无 WAF 拦截，彻底剔除误触发误拦截的外部 loginCheckJs，杜绝弹窗反复跳出，请求直达无阻。\n5. 【全量发现与热门标签】：全量 50+ 细分榜单与标签专区，首项即为可用排行保证书源校验秒过。包括官方男频/女频排行榜、21类分类精选以及16大热门题材标签（系统流、穿越时空、无敌流、凡人修仙、苟道发育、种田领主、学霸科技、克苏鲁、综漫同人、幕后黑手等），全部采用官方高响应 JSON 接口与自适应规则解析。\n6. 【规范遵循】：纯中文命名，源分组置空，所有外链全部应用内打开，绝不跳出到外部浏览器。",
     "bookSourceGroup": "",
@@ -59,7 +59,7 @@
       "kind": "[class*=\"_tags_\"] p@text##\\s+##,",
       "wordCount": "[class*=\"_tags_\"] p.-1@text",
       "bookUrl": "a@href@js:'https://m.qidian.com/book/' + result.match(/\\d+/)[0] + '/'",
-      "coverUrl": "img@data-src@js:'https:' + result || img@src"
+      "coverUrl": "<js>\nvar ds = String(java.getString(\"img@data-src\") || \"\");\nif (ds && ds.trim() && ds.indexOf(\"imgservices\") === -1) {\n  result = ds.startsWith(\"//\") ? (\"https:\" + ds) : ds;\n} else {\n  var href = String(java.getString(\"a@href\") || \"\");\n  var m = href.match(/(\\d{8,})/);\n  result = m ? (\"https://bookcover.yuewen.com/qdbimg/349573/\" + m[1] + \"/180\") : \"\";\n}\n</js>"
     },
     "ruleToc": {
       "chapterList": "[class*='_chapterItem_']",

@@ -64,26 +64,26 @@ data class BookSource(
 
 ```kotlin
 data class SearchRule(
-    // URL配置
-    var url: String? = null,               // 搜索URL
-    
+    // 校验关键字
+    var checkKeyWord: String? = null,
+
     // 列表规则
     var bookList: String? = null,          // 书籍列表选择器
-    
+
     // 字段提取规则
     var name: String? = null,              // 书名
     var author: String? = null,            // 作者
-    var kind: String? = null,              // 分类
-    var wordCount: String? = null,         // 字数
-    var lastChapter: String? = null,       // 最新章节
     var intro: String? = null,             // 简介
-    var coverUrl: String? = null,          // 封面URL
+    var kind: String? = null,              // 分类
+    var lastChapter: String? = null,       // 最新章节
+    var updateTime: String? = null,        // 更新时间
     var bookUrl: String? = null,           // 书籍URL
-    
-    // 验证规则
-    var checkKeyWord: String? = null       // 校验关键词
+    var coverUrl: String? = null,          // 封面URL
+    var wordCount: String? = null          // 字数
 )
 ```
+
+> 搜索 URL 不在这里，而是书源级的 `searchUrl`。
 
 ### 3. BookInfoRule（书籍信息规则）
 
@@ -113,25 +113,24 @@ data class BookInfoRule(
 
 ```kotlin
 data class TocRule(
-    // URL配置
-    var url: String? = null,               // 目录URL
-    
+    var preUpdateJs: String? = null,       // 更新目录前执行的 JS
+
     // 列表规则
     var chapterList: String? = null,       // 章节列表选择器
-    
+
     // 字段提取规则
     var chapterName: String? = null,       // 章节名称
     var chapterUrl: String? = null,        // 章节URL
-    
-    // 卷标识
-    var volumeList: String? = null,        // 卷列表
-    var volumeName: String? = null,        // 卷名称
-    
-    // 下一条规则
-    var nextTocUrl: String? = null,        // 下一页目录URL
-    
-    // 逆向规则
-    var reverseTocUrl: String? = null      // 逆向目录URL
+    var formatJs: String? = null,          // 格式化/排序 JS
+
+    // 标记规则
+    var isVolume: String? = null,          // 是否卷名
+    var isVip: String? = null,             // 是否 VIP
+    var isPay: String? = null,             // 是否付费
+    var updateTime: String? = null,        // 更新时间
+
+    // 下一页目录
+    var nextTocUrl: String? = null
 )
 ```
 
@@ -139,21 +138,24 @@ data class TocRule(
 
 ```kotlin
 data class ContentRule(
-    // URL配置
-    var url: String? = null,               // 正文URL
-    
     // 内容提取
     var content: String? = null,           // 正文内容
-    
-    // 替换规则
-    var replaceRegex: String? = null,      // 正则替换规则
-    
-    // 下一条规则
-    var nextContentUrl: String? = null,    // 下一页正文URL
-    
+    var subContent: String? = null,        // 副文规则（拼接在正文后/歌词等）
+    var title: String? = null,             // 只能从正文页获取标题时使用
+
+    // 分页
+    var nextContentUrl: String? = null,    // 同一章的下一页
+
     // Web视图
-    var webJs: String? = null,             // Web视图JS
-    var sourceRegex: String? = null        // 源正则
+    var webJs: String? = null,             // Web视图 JS
+    var sourceRegex: String? = null,       // 源正则
+    var replaceRegex: String? = null,      // 替换规则
+
+    // 图片/付费/回调
+    var imageStyle: String? = null,        // 默认居中；FULL 最大宽度
+    var imageDecode: String? = null,       // 图片 bytes 二次解密 JS
+    var payAction: String? = null,         // 购买操作，JS 或含 {{js}} 的 URL
+    var callBackJs: String? = null         // 事件回调 JS
 )
 ```
 

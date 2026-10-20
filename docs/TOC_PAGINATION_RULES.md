@@ -630,9 +630,9 @@ debug_book_source(book_source_json, test_type="toc")
 ## 参考资料
 
 - **知识库文档**:
-  - `assets/书源规则：从入门到入土.md`
-  - `assets/legado知识库.md`
-  - `assets/真实书源模板库.txt`
+  - `knowledge/书源规则教程.md`
+  - `knowledge/legado_knowledge_base.md`
+  - `knowledge/真实书源模板库.txt`
 
 - **真实书源示例**:
   - 八叉书库（CSS选择器）
@@ -640,9 +640,8 @@ debug_book_source(book_source_json, test_type="toc")
   - 完本小说网（URL数组）
 
 - **调试工具**:
-  - `tools/legado_debugger.py`
-  - `tools/book_source_debugger.py`
+  - `debugger/debugger_cli.py`
 
 ---
 
-> **更新**: 本文档已同步到 `assets/智能体自我认知.md`，智能体将在生成书源时自动应用这些规则。
+> **说明**: 本文档是 `nextTocUrl` / `nextContentUrl` 的专项说明；通用流程以 [`../skill/SKILL.md`](../skill/SKILL.md) 为准。

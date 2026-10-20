@@ -30,7 +30,7 @@ from debugger.engine import BookSource, DebugEngine
 
 
 def load_book_source(file_path: str) -> BookSource:
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, 'r', encoding='utf-8-sig') as f:
         data = json.load(f)
     
     if isinstance(data, list) and len(data) > 0:

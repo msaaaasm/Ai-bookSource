@@ -1,435 +1,180 @@
-# Legado书源驯兽师 - 最终检查清单
+# 书源提交前检查清单
 
-## ✅ 检查时间
-- 检查日期: 2025-02-18
-- 检查人员: Agent搭建专家
-- 项目路径: /workspace/projects
+> 每一项都通过再交付。模拟器通过不代表真机通过，标注“真机”的项必须在 Legado App 里确认。
 
 ---
 
-## 📁 目录结构检查
+## 一、JSON 与文件
 
-### ✅ 核心目录
-```
-/workspace/projects/
-├── config/              # 配置目录
-│   └── agent_llm_config.json  ✅ 存在且有效
-├── docs/                # 文档目录
-│   ├── KNOWLEDGE_REFERENCE_UPDATE.md  ✅ 存在
-│   ├── SMART_ANALYSIS_GUIDE.md        ✅ 存在
-│   ├── TOOL_REPEAT_CALL_FIX.md       ✅ 存在
-│   └── FINAL_CHECKLIST.md             ✅ 本次新增
-├── scripts/             # 脚手架脚本
-│   ├── book_source_learner.py         ✅ 存在
-│   ├── learning_crawler.py            ✅ 存在
-│   ├── legado_source_crawler.py       ✅ 存在
-│   └── ...其他脚本                    ✅ 存在
-├── src/                 # 源代码目录
-│   ├── agents/
-│   │   └── agent.py                 ✅ 存在
-│   ├── tools/                        ✅ 包含所有工具
-│   ├── storage/                      ✅ 包含存储模块
-│   └── utils/                        ✅ 包含工具类
-└── assets/              # 资源目录
-    ├── legado_knowledge_base.md      ✅ 存在
-    ├── css选择器规则.txt              ✅ 存在
-    ├── 书源规则：从入门到入土.md      ✅ 存在
-    └── book_source_database/         ✅ 存在
+- [ ] 文件是 UTF-8、标准 JSON，**最外层是数组** `[...]`
+- [ ] 无注释、无尾随逗号、无 Markdown 代码围栏
+- [ ] 用命令校验通过：
+
+```bash
+python -c "import json; d=json.load(open('book_sources/书名.json', encoding='utf-8')); print(type(d).__name__, len(d))"
 ```
 
----
-
-## 🔧 配置文件检查
-
-### ✅ config/agent_llm_config.json
-
-**JSON格式验证**: ✅ 通过
-**必需字段检查**:
-- `config`: ✅ 存在，包含所有必需字段
-  - `model`: "doubao-seed-1-8-251228" ✅
-  - `temperature`: 0.7 ✅
-  - `top_p`: 0.9 ✅
-  - `max_completion_tokens`: 32768 ✅
-  - `timeout`: 600 ✅
-  - `thinking`: "disabled" ✅
-- `sp`: ✅ 存在，非空字符串
-- `tools`: ✅ 存在，数组类型
-  - `search_knowledge` ✅
-  - `edit_book_source` ✅
-
-**System Prompt 内容**:
-- ✅ 定义了三种工作模式（查询模式、教学模式、完整生成模式）
-- ✅ 详细说明了三阶段工作流程
-- ✅ 包含知识库查询指南
-- ✅ 包含工作流程示例
-- ✅ 包含绝对禁止的行为清单
+- [ ] 文件位于 `book_sources/<纯中文名>.json`
+- [ ] 没有覆盖用户已有的同名书源（如要覆盖，先确认）
 
 ---
 
-## 🛠️ 工具模块检查
+## 二、命名与分组
 
-### ✅ src/tools/ 目录
+- [ ] `bookSourceName` 是纯中文名称
+- [ ] 不含域名、`.com`、`(xxx.com)`、`[xxx]`
+- [ ] 不含 Emoji、图标、装饰符号
+- [ ] `bookSourceGroup` 是 `""`（不预设分组）
+- [ ] `bookSourceUrl` 是站点根地址，不是搜索页/详情页
+- [ ] `bookSourceType` 正确：`0` 文字、`1` 音频、`2` 图片、`3` 文件、`4` 视频
 
-**所有工具文件**: ✅ 全部存在
+快速检查：
 
-1. **knowledge_search_tool.py** ✅
-   - 功能: 知识库查询
-   - 导入状态: ✅ 正常
-
-2. **book_source_debugger.py** ✅
-   - 功能: 书源调试
-   - 导入状态: ✅ 正常
-
-3. **book_source_editor.py** ✅
-   - 功能: 书源编辑
-   - 导入状态: ✅ 正常
-   - 包含工具: edit_book_source, export_book_source, validate_book_source, save_to_knowledge
-
-4. **element_picker_guide.py** ✅
-   - 功能: 元素选择器指南
-   - 导入状态: ✅ 正常
-   - 包含工具: element_picker_guide, generate_selector_suggestions, browser_debug_helper
-
-5. **book_source_html_editor.py** ✅
-   - 功能: HTML编辑器生成
-   - 导入状态: ✅ 正常
-
-6. **smart_web_analyzer.py** ✅
-   - 功能: 智能网站分析
-   - 导入状态: ✅ 正常
-   - 包含工具: smart_analyze_website, smart_build_search_request, smart_fetch_list
-
-7. **web_fetch_tool.py** ✅
-   - 功能: 网页获取工具
-   - 导入状态: ✅ 正常
-   - 包含工具: fetch_web_page, extract_elements, analyze_search_structure
-
-**工具导入测试**: ✅ 全部通过
+```bash
+python - <<'PY'
+import json, re
+d = json.load(open('book_sources/书名.json', encoding='utf-8'))
+s = d[0] if isinstance(d, list) else d
+print('name:', s.get('bookSourceName'))
+print('group:', repr(s.get('bookSourceGroup')))
+print('type:', s.get('bookSourceType'))
+name = s.get('bookSourceName', '')
+print('contains ascii/domain:', bool(re.search(r'[A-Za-z0-9.]', name)))
+print('contains emoji:', bool(re.search(r'[\U0001F300-\U0001FAFF☀-➿]', name)))
+PY
+```
 
 ---
 
-## 🧠 存储模块检查
+## 三、字段完整性
 
-### ✅ src/storage/ 目录
-
-**子目录结构**:
-- `database/` ✅ 包含数据库模块
-- `memory/` ✅ 包含内存模块
-- `s3/` ✅ 包含对象存储模块
-
-**关键模块**:
-- `memory/memory_saver.py` ✅
-  - 函数: `get_memory_saver()`
-  - 导入状态: ✅ 正常
-
-- `database/db.py` ✅
-- `database/shared/model.py` ✅
-- `s3/s3_storage.py` ✅
-
-**存储模块导入测试**: ✅ 全部通过
+- [ ] `bookSourceUrl`、`bookSourceName` 非空
+- [ ] 需要搜索的源：`searchUrl` 非空
+- [ ] `ruleSearch.bookList`、`name`、`bookUrl` 非空
+- [ ] `ruleToc.chapterList`、`chapterName`、`chapterUrl` 非空
+- [ ] `ruleContent.content` 非空
+- [ ] 有发现页时：`exploreUrl` 与 `ruleExplore` 配套
+- [ ] 没有使用 `prevContentUrl`
+- [ ] 没有编造的字段名
 
 ---
 
-## 🤖 Agent主逻辑检查
+## 四、搜索
 
-### ✅ src/agents/agent.py
+- [ ] 请求方法（GET/POST）与站点一致
+- [ ] 搜索参数名正确（`q` / `keyword` / `searchkey` / ...）
+- [ ] 编码正确（GBK 站点已加 `charset: "gbk"`）
+- [ ] 需要 Header/Cookie/Token 的已补齐
+- [ ] 搜索结果非空
+- [ ] `name` 有值
+- [ ] `bookUrl` 是完整可访问的详情页链接
+- [ ] `author` / `kind` / `lastChapter` / `intro` 有值（页面有时）
+- [ ] `coverUrl` 有值且不是占位图；懒加载已处理
+- [ ] 相对链接/`//` 链接已正确处理
 
-**导入检查**:
-- 所有工具导入: ✅ 正常
-- 所有存储模块导入: ✅ 正常
-- LangChain依赖: ✅ 正常
-
-**核心函数**:
-- `build_agent()`: ✅ 正常
-- `AgentState`: ✅ 正常
-- `_windowed_messages()`: ✅ 正常
-
-**Agent构建测试**: ✅ 成功
-
----
-
-## 📚 资源文件检查
-
-### ✅ assets/ 目录
-
-**知识库文件**:
-- `legado_knowledge_base.md` ✅ 存在
-- `css选择器规则.txt` ✅ 存在
-- `书源规则：从入门到入土.md` ✅ 存在
-- `方法-JS扩展类.md` ✅ 存在
-- `方法-加密解密.md` ✅ 存在
-- `方法-登录检查JS.md` ✅ 存在
-
-**数据库文件**:
-- `book_source_database/` ✅ 包含书源数据库
-- `knowledge_base/` ✅ 包含知识库书源
-- `metadata.json` ✅ 存在
+```bash
+python debugger/debugger_cli.py search book_sources/书名.json --keyword "测试词" --output json
+```
 
 ---
 
-## 🧪 功能测试
+## 五、详情页
 
-### ✅ 测试1: 查询模式
+- [ ] `name` 正确
+- [ ] `author` 正确（没有“作者：”前缀）
+- [ ] `coverUrl` 可加载
+- [ ] `intro` 正确，没有导航/广告混入
+- [ ] `kind` / `lastChapter` / `wordCount` 有值（页面有时）
+- [ ] 能拿到目录 URL（`tocUrl` 或 `bookUrl` 本身）
 
-**测试输入**: "查询@text和@html有什么区别？"
-**测试结果**: ✅ 通过
-- 正确识别为查询模式
-- 调用 `search_knowledge` 工具
-- 详细解释了 @text 和 @html 的区别
-- 提供了代码示例和表格对比
-
-### ✅ 测试2: 教学模式
-
-**测试输入**: "给我看一下CSS选择器的源代码"
-**测试结果**: ✅ 通过
-- 正确识别为教学模式
-- 调用 `search_knowledge` 工具
-- 直接展示文档原始内容
-- 保持文档原貌，标注重点
-
-### ✅ 测试3: 完整生成模式（GET请求）
-
-**测试输入**: "创建书源，网站是 https://test.com，搜索接口使用GET请求，参数是q，HTML是<div class='result'><div class='item'><h3>标题</h3><a href='/1'>链接</a></div></div>"
-**测试结果**: ✅ 通过
-- 正确识别为完整生成模式
-- 第一阶段调用 `search_knowledge` 查询知识库
-- 第二阶段按照知识库规范严格审查规则
-- 第三阶段成功创建完整书源JSON
-- 包含所有必需字段
-
-### ✅ 测试4: 完整生成模式（POST请求）
-
-**测试输入**: "创建一个书源，网站是 https://example.com，搜索使用POST请求，参数是keyword，HTML是<div class='list'><div class='item'><a href='/1'>书名</a></div></div>"
-**测试结果**: ✅ 通过
-- 正确识别为完整生成模式
-- 第一阶段调用 `search_knowledge` 查询知识库
-- 第二阶段按照知识库规范严格审查规则
-- 第三阶段成功创建完整书源JSON
-- POST请求配置符合知识库规范
+```bash
+python debugger/debugger_cli.py info book_sources/书名.json --url "<详情URL>"
+```
 
 ---
 
-## 📊 依赖包检查
+## 六、目录
 
-### ✅ Python依赖
+- [ ] `chapterList` 数量与页面一致
+- [ ] 第一章、最后一章都存在
+- [ ] 章节名没有多余序号/广告
+- [ ] 章节 URL 可访问
+- [ ] 目录分页已处理（`nextTocUrl`）
+- [ ] 倒序目录已反转
+- [ ] 重复章节已去除
+- [ ] 分卷站点已正确处理卷名/章节
 
-**已安装的包**:
-- `langchain` ✅
-- `langchain-openai` ✅
-- `langgraph` ✅
-- `requests` ✅
-- `beautifulsoup4` ✅
-- `schedule` ✅
-- `coze-coding-utils` ✅
-
-**依赖导入测试**: ✅ 全部正常
-
----
-
-## 🚀 启动流程检查
-
-### ✅ 启动步骤
-
-1. **环境变量检查**: ✅
-   - `COZE_WORKSPACE_PATH`: ✅ 存在
-   - `COZE_WORKLOAD_IDENTITY_API_KEY`: ✅ 存在
-   - `COZE_INTEGRATION_MODEL_BASE_URL`: ✅ 存在
-
-2. **配置文件加载**: ✅
-   - JSON格式正确
-   - 必需字段完整
-
-3. **Agent构建**: ✅
-   - 所有工具加载成功
-   - 存储模块初始化成功
-   - System Prompt 加载成功
-
-4. **工具注册**: ✅
-   - 所有工具正确注册到Agent
-   - 工具优先级正确
+```bash
+python debugger/debugger_cli.py toc book_sources/书名.json --url "<目录URL>"
+```
 
 ---
 
-## 🎯 核心功能检查
+## 七、正文
 
-### ✅ 三种工作模式
+- [ ] `content` 有正文，不是导航/广告/空壳
+- [ ] 段落保留正确（需要时用 `@html`）
+- [ ] 广告、域名、提示语已清理
+- [ ] **同一章分页**已填 `nextContentUrl`
+- [ ] **下一章**没有误填进 `nextContentUrl`
+- [ ] 图片源：图片 URL 完整、可加载、数量正确
+- [ ] 音频/视频源：媒体 URL 可播放
 
-1. **查询模式**: ✅
-   - 触发条件识别准确
-   - 知识库查询正常
-   - 回答质量良好
-
-2. **教学模式**: ✅
-   - 触发条件识别准确
-   - 文档展示正常
-   - 原文保持完整
-
-3. **完整生成模式**: ✅
-   - 三阶段流程执行正确
-   - 知识库查询严格
-   - 书源JSON格式正确
-
-### ✅ 防循环机制
-
-- ✅ 前两个阶段禁止调用 `edit_book_source`
-- ✅ 第三阶段只允许调用一次 `edit_book_source`
-- ✅ 工具返回包含防循环提示
-
-### ✅ 知识库权威性
-
-- ✅ 第一阶段必须调用 `search_knowledge`
-- ✅ 禁止仅凭记忆编写规则
-- ✅ 所有规则严格遵循知识库
+```bash
+python debugger/debugger_cli.py content book_sources/书名.json --url "<正文URL>"
+```
 
 ---
 
-## 📝 文档完整性
+## 八、发现页（如果有）
 
-### ✅ 用户文档
-
-- `README.md` ✅ 存在
-- `docs/KNOWLEDGE_REFERENCE_UPDATE.md` ✅ 存在
-- `docs/SMART_ANALYSIS_GUIDE.md` ✅ 存在
-- `docs/TOOL_REPEAT_CALL_FIX.md` ✅ 存在
-- `docs/FINAL_CHECKLIST.md` ✅ 本次新增
-
-### ✅ 开发文档
-
-- `scripts/README_LEARNING.md` ✅ 存在
-- `scripts/LEARNING_SYSTEM_GUIDE.md` ✅ 存在
-- `scripts/LEARNING_RECORD_SYSTEM_UPDATE.md` ✅ 存在
-- `scripts/CRAWLER_README.md` ✅ 存在
+- [ ] `exploreUrl` 的每个 URL 都能打开
+- [ ] `{{page}}` 位置与站点分页格式一致
+- [ ] 分类名与站点一致
+- [ ] 列表规则能出书
+- [ ] 封面/作者/简介正常
+- [ ] 排行榜与分类冲突时已处理
 
 ---
 
-## 🔒 安全检查
+## 九、特殊场景
 
-### ✅ 配置安全
-
-- ✅ JSON配置文件格式正确
-- ✅ 无硬编码敏感信息
-- ✅ 环境变量使用规范
-
-### ✅ 工具安全
-
-- ✅ 所有工具都有错误处理
-- ✅ 无SQL注入风险
-- ✅ 无XSS风险
+- [ ] **WAF/Cloudflare**：`loginCheckJs` 没有全局模糊匹配；没有 `java.connect` 二次请求；没有无限弹窗
+- [ ] **移动端 API**：`header` 带全鉴权；没有 `{}` 真值短路；域名有兜底
+- [ ] **加密响应**：解密逻辑可复现；失败有降级
+- [ ] **WebView**：`webJs` 不是空轮询；有超时/失败处理
+- [ ] **Rhino JS**：没有 `java.randomUUID()`；Java String 已 `String(...)` 包装
+- [ ] **Cookie/Token**：已持久化，不是每次重新生成
+- [ ] **编码**：中文无乱码
 
 ---
 
-## 📈 性能检查
+## 十、真机验证（必须）
 
-### ✅ 响应时间
-
-- Agent构建时间: < 2秒 ✅
-- 工具调用响应: < 5秒 ✅
-- 知识库查询: < 3秒 ✅
-
-### ✅ 内存使用
-
-- 正常运行内存: < 500MB ✅
-- 峰值内存: < 1GB ✅
+- [ ] 导入书源成功
+- [ ] 搜索出结果
+- [ ] 打开详情页，信息正确
+- [ ] 打开目录，能翻到最后一章
+- [ ] 打开正文，内容完整
+- [ ] 有发现页的，能正常浏览
+- [ ] 连续阅读 3 章无异常
+- [ ] 没有反复弹验证/白屏/闪退
 
 ---
 
-## 🎉 最终检查结果
+## 十一、交付说明
 
-### ✅ 总体评估
-
-**所有检查项目**: ✅ 全部通过
-
-**关键指标**:
-- 代码完整性: ✅ 100%
-- 功能可用性: ✅ 100%
-- 文档完整性: ✅ 100%
-- 测试覆盖率: ✅ 核心功能100%
-- 配置正确性: ✅ 100%
-
-### ✅ 功能验证清单
-
-- [x] 配置文件格式正确
-- [x] 所有工具正常加载
-- [x] 存储模块正常工作
-- [x] Agent构建成功
-- [x] 查询模式功能正常
-- [x] 教学模式功能正常
-- [x] 完整生成模式功能正常
-- [x] 防循环机制有效
-- [x] 知识库查询准确
-- [x] POST请求配置规范
-- [x] GET请求配置规范
-- [x] 三阶段流程执行正确
-- [x] 书源JSON格式正确
-
-### ✅ 质量评估
-
-**代码质量**: ⭐⭐⭐⭐⭐ (5/5)
-**功能完整度**: ⭐⭐⭐⭐⭐ (5/5)
-**文档质量**: ⭐⭐⭐⭐⭐ (5/5)
-**测试覆盖率**: ⭐⭐⭐⭐⭐ (5/5)
-**用户体验**: ⭐⭐⭐⭐⭐ (5/5)
+- [ ] 在对话中给出完整 JSON（可复制导入）
+- [ ] 说明测试结果：哪些通过、哪些未验证
+- [ ] 说明已知限制（需要登录、需要代理、需要 WebView 等）
+- [ ] 如有新踩坑，已更新 [`BUG_FIXES.md`](BUG_FIXES.md)
 
 ---
 
-## 🚀 部署就绪
+## 附：一键跑完四个阶段
 
-### ✅ 部署前检查
+```bash
+python debugger/debugger_cli.py test book_sources/书名.json --keyword "测试词"
+```
 
-- [x] 所有依赖已安装
-- [x] 配置文件已设置
-- [x] 资源文件已准备
-- [x] 代码已测试
-- [x] 文档已完善
-- [x] 错误处理已完善
-
-### ✅ 生产环境就绪
-
-**状态**: ✅ **已就绪，可以部署**
-
----
-
-## 📌 维护建议
-
-### 🔧 定期维护
-
-1. **知识库更新**: 每月检查并更新知识库文档
-2. **依赖更新**: 定期更新Python依赖包
-3. **性能监控**: 监控Agent响应时间和内存使用
-4. **日志分析**: 定期分析日志，优化性能
-
-### 📊 监控指标
-
-- Agent启动成功率
-- 工具调用成功率
-- 用户满意度
-- 平均响应时间
-
----
-
-## 🎯 下一步优化
-
-### 💡 功能增强
-
-1. 添加更多书源模板
-2. 优化知识库搜索算法
-3. 增加批量书源创建功能
-4. 添加书源质量评估功能
-
-### 🚀 性能优化
-
-1. 优化知识库查询速度
-2. 减少Agent启动时间
-3. 优化内存使用
-4. 添加缓存机制
-
----
-
-**检查完成时间**: 2025-02-18
-**检查人员**: Agent搭建专家
-**检查状态**: ✅ **全部通过**
-**部署状态**: ✅ **已就绪**
-
----
-
-🎉 **Legado书源驯兽师已准备就绪，可以投入使用！** 🎉
+`test` 会依次跑搜索、详情、目录、正文。任何一步失败，先用对应的单阶段命令定位。

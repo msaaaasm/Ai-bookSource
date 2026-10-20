@@ -32,7 +32,7 @@
   - 检查HTML中的`<meta charset>`标签
 
 - [ ] **保存HTML到文件**
-  - 保存到`assets/`目录
+  - 保存到`temp/`目录（临时文件，不提交）
   - 使用`.html`扩展名
   - 使用UTF-8编码保存
 
@@ -103,7 +103,7 @@ response = requests.get('https://example.com')
 real_html = response.text
 
 # 保存原始HTML
-with open('assets/real.html', 'w', encoding='utf-8') as f:
+with open('temp/real.html', 'w', encoding='utf-8') as f:
     f.write(real_html)
 
 # 打印前1000字符检查
@@ -264,42 +264,41 @@ print(f"script标签数量: {len(scripts)}")
 
 ## 🛠️ 工具使用指南
 
-### 1. 使用 `smart_fetch_html` 获取真实HTML
+### 1. 用 HTTP 请求获取真实 HTML
 
-```python
-# 获取真实HTML
-html = smart_fetch_html(
-    url="https://example.com/book/123",
-    method="GET",
-    headers={"User-Agent": "Mozilla/5.0"}
-)
+```bash
+# GET
+curl -L -A "Mozilla/5.0 ..." "https://example.com/book/123" -o temp/book_info.html
 
-# 保存到assets目录
-with open('assets/book_info.html', 'w', encoding='utf-8') as f:
-    f.write(html)
+# POST
+curl -L -A "Mozilla/5.0 ..." -X POST "https://example.com/search" \
+  --data "keyword=test" -o temp/search.html
 ```
 
-### 2. 使用 `analyze_complete_book_source` 分析真实HTML
-
 ```python
-# 基于真实HTML分析
-analysis = analyze_complete_book_source(
-    search_html=search_html,
-    book_info_html=book_info_html,
-    toc_html=toc_html,
-    content_html=content_html
-)
+import requests
+
+r = requests.get("https://example.com/book/123", headers={"User-Agent": "Mozilla/5.0"}, timeout=20)
+r.encoding = r.apparent_encoding  # 或显式 'gbk'
+with open("temp/book_info.html", "w", encoding="utf-8") as f:
+    f.write(r.text)
 ```
 
-### 3. 使用 `debug_book_source` 验证规则
+把 HTML 保存到 `temp/`（不提交），不要保存到知识库目录。
 
-```python
-# 使用真实HTML验证规则
-result = debug_book_source(
-    book_source_json=book_source,
-    test_type="all",
-    real_html=book_info_html
-)
+### 2. 用 Python 解析器/浏览器验证选择器
+
+- CSS：BeautifulSoup / lxml / 浏览器控制台
+- XPath：lxml
+- JSONPath：jsonpath-ng
+- 正则：Python `re` 或浏览器控制台
+
+### 3. 用调试器验证整条规则
+
+```bash
+python debugger/debugger_cli.py info    book_sources/书名.json --url "<详情URL>"
+python debugger/debugger_cli.py toc     book_sources/书名.json --url "<目录URL>"
+python debugger/debugger_cli.py content book_sources/书名.json --url "<正文URL>"
 ```
 
 ---
@@ -317,11 +316,11 @@ result = debug_book_source(
 ### ✅ 正确的流程
 
 ```
-1. smart_fetch_html() → 获取真实HTTP响应HTML
-2. 保存HTML到assets目录
-3. 分析真实HTML结构
-4. 基于真实HTML编写规则
-5. debug_book_source() → 验证规则
+1. HTTP 请求（curl / requests）→ 获取真实响应 HTML
+2. 保存 HTML 到 temp/ 目录
+3. 分析真实 HTML 结构
+4. 基于真实 HTML 编写规则
+5. debugger/debugger_cli.py 或真机 → 验证规则
 ```
 
 ### ❌ 错误的流程
@@ -337,10 +336,10 @@ result = debug_book_source(
 
 ## 📖 相关文档
 
-- **智能体自我认知.md** - 必须基于真实HTML章节
-- **SELECT_DROPDOWN_PAGINATION.md** - select下拉菜单分页
-- **TOC_PAGINATION_RULES.md** - 目录页分页规则
-- **ESSENTIAL_KNOWLEDGE_SUMMARY.md** - 精华知识汇总
+- [`../书源规则教程.md`](../书源规则教程.md) - 规则语法
+- [`TOC_PAGINATION_RULES.md`](../../docs/TOC_PAGINATION_RULES.md) - 目录页分页规则
+- [`书源精华速记.md`](书源精华速记.md) - 精华知识汇总
+- [`../../skill/SKILL.md`](../../skill/SKILL.md) - AI 工作手册
 
 ---
 

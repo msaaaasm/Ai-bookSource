@@ -1,8 +1,8 @@
 [
     {
-        "bookSourceComment": "",
+        "bookSourceComment": "搜索需要超过2个字",
         "bookSourceGroup": "",
-        "bookSourceName": "起点图",
+        "bookSourceName": "起点图网",
         "bookSourceType": 0,
         "bookSourceUrl": "https://www.qidiantu.com/",
         "bookUrlPattern": "",
@@ -27,8 +27,8 @@
             "tocUrl": ""
         },
         "ruleContent": {
-            "content": "@css:div.alert~div.panel div.panel-body@html||main p@html||html@lang||body h1@text\n<js>\n//书评|正文|无内容|卷名\nif(result==\"zh-hans\"){\"无人区，这里暂时没有书评呢(˃ ⌑ ˂ഃ )\"}\nelse{result}\n</js>",
-            "nextContentUrl": "nav@ul@li.-1@a@href\n<js>\ns=[];\nr=String(result);\nn=r.slice(r.lastIndexOf(\"/\")+1,-1);\nfor(i=1;i<=n;i++){s.push(baseUrl+\"/\"+i)}\ns\n</js>",
+            "content": "<js>\n// 智能呈现起点图数据详情或书评\nif (baseUrl.endsWith('/d')) {\n    result = java.getString('class.table-responsive@html');\n} else if (baseUrl.endsWith('/m')) {\n    result = java.getString('class.table-responsive@html');\n} else if (baseUrl.match(/\\/info\\/\\d+\\/\\d+$/)) {\n    result = java.getString('class.panel-body@p@html || main p@html');\n} else {\n    result = java.getString('class.media-body@html') + '\\n' + java.getString('class.panel-body.0@html');\n}\nresult = result || '暂无详细内容';\n</js>",
+            "nextContentUrl": "",
             "title": "",
             "webJs": ""
         },
@@ -44,22 +44,22 @@
             "lastChapter": ""
         },
         "ruleSearch": {
+            "checkKeyWord": "宿命之环",
             "bookList": "class.media",
             "name": "h4@text",
-            "bookUrl": "tag.tr.0@tag.a@href",
+            "bookUrl": "tag.a.0@href",
             "author": "tag.tr.1@tag.a@text",
             "coverUrl": "img@src",
             "kind": "tag.tr.2@text##标签:",
             "wordCount": "tag.tr.3@text##总字数:|\\s*真实粉丝数:.*",
             "intro": "tag.tr.4@text",
-            "lastChapter": "tag.tr.4@text##.*首订:",
-            "checkKeyWord": "https://www.qidiantu.com/info/1036370336"
+            "lastChapter": "tag.tr.4@text##.*首订:"
         },
         "ruleToc": {
-            "chapterList": "<js>\nvar bUrl = (typeof book != \"undefined\" && book && book.bookUrl) ? book.bookUrl : baseUrl;\nvar re = [];\ntry {\n  var l = bUrl.replace(\"www.qidiantu\", \"book.qidian\") + \"/#Catalog\";\n  var r = java.ajax(l);\n  java.setContent(r);\n  re = java.getElements(\"@css:.cf li h2, .volume h3\");\n} catch(e) {}\n['<a n=\"书评\" href=\"' + bUrl + '\">'].concat(re);\n</js>",
-            "chapterName": "a@n||h3@text||a@text##[\\s\\S]*订阅本卷\\s*",
-            "chapterUrl": "<js>\nif(String(result).startsWith(\"<h3\"))\n{\"\"}\nelse{java.getString(\"a@href\")}\n</js>",
-            "isVolume": "h3@text",
+            "chapterList": "<js>\nvar bUrl = (typeof book != \"undefined\" && book && book.bookUrl) ? book.bookUrl : baseUrl;\nvar bid = (String(bUrl).match(/\\/info\\/(\\d+)/) || ['', ''])[1];\nvar list = [];\nif (bid) {\n    list.push({ title: '📊 综合数据与简介', url: 'https://www.qidiantu.com/info/' + bid });\n    list.push({ title: '📈 详细数据分析', url: 'https://www.qidiantu.com/info/' + bid + '/d' });\n    list.push({ title: '👑 盟主粉丝榜', url: 'https://www.qidiantu.com/info/' + bid + '/m' });\n    for (var p = 1; p <= 5; p++) {\n        list.push({ title: '💬 起点书评 (第' + p + '页)', url: 'https://www.qidiantu.com/info/' + bid + '/' + p });\n    }\n}\nresult = list;\n</js>",
+            "chapterName": "title",
+            "chapterUrl": "url",
+            "isVolume": "",
             "preUpdateJs": ""
         },
         "searchUrl": "https://www.qidiantu.com/bookxyy/{{key}}",

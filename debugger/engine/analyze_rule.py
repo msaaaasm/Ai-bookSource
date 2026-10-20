@@ -514,6 +514,17 @@ class AnalyzeRule:
                             is_url: bool = False,
                             return_list: bool = False,
                             return_elements: bool = False) -> Any:
+        # 支持 Legado || 规则（第一个匹配成功即返回）
+        if '||' in rule:
+            for sub_rule in rule.split('||'):
+                sub_rule = sub_rule.strip()
+                if not sub_rule:
+                    continue
+                res = self._apply_default_rule(sub_rule, content, is_url, return_list, return_elements)
+                if res:
+                    return res
+            return [] if return_list or return_elements else ""
+
         # 注意: 字典/列表类型已经在_apply_rules中通过_make_up_rule处理
         # 这里只处理字符串和Tag类型
         
