@@ -91,8 +91,6 @@ python debugger/debugger_cli.py search book_sources/起点中文.json --keyword 
 |---|---|---|---|
 | [`起点中文.json`](book_sources/起点中文.json) | 起点中文 | 文字 | 移动端搜索 + 请求头/WAF 适配 + 懒加载封面兜底 |
 | [`起点图网.json`](book_sources/起点图网.json) | 起点图网 | 文字 | 网文数据/榜单/书单，非正文站 |
-| [`禁漫天堂.json`](book_sources/禁漫天堂.json) | 禁漫天堂 | 图片 | 高防漫画站、WebView、图片解密 |
-| [`绅士漫画.json`](book_sources/绅士漫画.json) | 绅士漫画 | 图片 | PC 模板 + 动态域名/发布页 + 登录 + 图片线路自动切换 + 搜索筛选（`关键词|cate=9`）+ 合集目录 |
 
 参考稿和变体（未按最终命名规范整理）在 [`knowledge/reference/书源变体/`](knowledge/reference/书源变体/)。
 
