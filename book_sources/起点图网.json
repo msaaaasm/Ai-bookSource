@@ -27,14 +27,14 @@
             "tocUrl": ""
         },
         "ruleContent": {
-            "content": "<js>\n// 智能呈现起点图数据详情或书评\nif (baseUrl.endsWith('/d')) {\n    result = java.getString('class.table-responsive@html');\n} else if (baseUrl.endsWith('/m')) {\n    result = java.getString('class.table-responsive@html');\n} else if (baseUrl.match(/\\/info\\/\\d+\\/\\d+$/)) {\n    result = java.getString('class.panel-body@p@html || main p@html');\n} else {\n    result = java.getString('class.media-body@html') + '\\n' + java.getString('class.panel-body.0@html');\n}\nresult = result || '暂无详细内容';\n</js>",
+            "content": "<js>\nif (baseUrl.endsWith('/d')) {\n    result = java.getString('class.table-responsive@html');\n} else if (baseUrl.endsWith('/m')) {\n    result = java.getString('class.table-responsive@html');\n} else {\n    var parts = [];\n    if (!baseUrl.match(/\\/\\d+$/)) {\n        var info = java.getString('class.media-body@html');\n        if (info) parts.push(info);\n        var desc = java.getString('class.panel-body.0@html');\n        if (desc) parts.push(desc);\n    }\n    var alert = java.getString('class.alert@html');\n    if (alert) parts.push(alert);\n    var comments = java.getElements('@css:.panel-default:has(.panel-footer)');\n    if (comments && comments.length > 0) {\n        for (var i = 0; i < comments.length; i++) {\n            parts.push(comments[i].outerHtml());\n        }\n    }\n    result = parts.join('<hr>') || '暂无详细内容';\n}\nresult = result || '暂无详细内容';\n</js>",
             "nextContentUrl": "",
             "title": "",
             "webJs": ""
         },
         "ruleExplore": {
             "bookList": "<js>\nif(baseUrl.includes(\"booklist/\")){\njava.getElements('class.well well-sm table-responsive');\n}else{\njava.getElements('tbody@tr');\n}\n</js>",
-            "name": "@css:a[href*=\"/info/\"]@text||h4@text##^\\[.*?\\]",
+            "name": "@css:a[href*=\"/info/\"]@text||h4@text##(^\\[.*?\\])|[《》]",
             "author": "@css:a[href*=\"/author/\"]@text##\\(Lv\\.\\d+\\)|^Lv\\.\\d+",
             "bookUrl": "@css:a[href*=\"/info/\"]@href##/[dm]$",
             "coverUrl": "<js>\nvar href = String(java.getString('@css:a[href*=\"/info/\"]@href') || '');\nvar m = href.match(/\\/info\\/(\\d+)/);\nm ? \"https://qidian.qpic.cn/qdbimg/349573/\" + m[1] + \"/180\" : \"\";\n</js>",
